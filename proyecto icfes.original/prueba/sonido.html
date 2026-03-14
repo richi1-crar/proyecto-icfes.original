@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Control de Sonido</title>
+  <style>
+    #btnSonido {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 50px;
+      height: 50px;
+      font-size: 30px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.8);
+      border: none;
+      border-radius: 50%;
+      z-index: 10000;
+      transition: background 0.3s ease;
+    }
+    #btnSonido:hover {
+      background: rgba(255,255,255,1);
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="audioGlobal" loop>
+    <source src="musica.mp3" type="audio/mpeg" />
+    Tu navegador no soporta audio HTML5.
+  </audio>
+
+  <button id="btnSonido" aria-label="Control de sonido">🔊</button>
+
+  <script>
+   // --- SONIDO DE FONDO ---
+const musica = new Audio("musica.mp3");
+musica.loop = true;
+musica.volume = 0.1;
+
+// Estado guardado en localStorage ('on' o 'off')
+let estadoMusica = localStorage.getItem('estadoMusica') || 'on';
+
+// Función para actualizar estado de la música
+function actualizarMusica() {
+  if (estadoMusica === 'on') {
+    musica.play().catch(() => console.log('Requiere interacción del usuario para reproducir'));
+    btnSonido.textContent = '🔊';
+  } else {
+    musica.pause();
+    btnSonido.textContent = '🔇';
+  }
+}
+
+// Solo iniciar música con el primer clic, si está activada
+document.addEventListener("click", () => {
+  if (estadoMusica === 'on' && musica.paused) {
+    musica.play();
+  }
+}, { once: true });
+
+// --- SONIDO DE BOTONES ---
+const sonidoClick = new Audio("musica.boton.mp3");
+
+function sonarClick() {
+  sonidoClick.currentTime = 0;
+  sonidoClick.play();
+}
+
+// --- ACTIVAR SONIDO EN TODOS LOS BOTONES ---
+document.addEventListener("DOMContentLoaded", () => {
+  const botones = document.querySelectorAll("button, .btn, .boton");
+  botones.forEach(b => b.addEventListener("click", sonarClick));
+});
+
+// --- BOTÓN PARA CONTROLAR SONIDO ---
+const btnSonido = document.createElement('button');
+btnSonido.id = 'btnSonido';
+btnSonido.style.position = 'fixed';
+btnSonido.style.top = '10px';
+btnSonido.style.left = '10px';
+btnSonido.style.width = '50px';
+btnSonido.style.height = '50px';
+btnSonido.style.fontSize = '30px';
+btnSonido.style.cursor = 'pointer';
+btnSonido.style.background = 'rgba(255,255,255,0.8)';
+btnSonido.style.border = 'none';
+btnSonido.style.borderRadius = '50%';
+btnSonido.style.zIndex = '10000';
+btnSonido.title = 'Activar/Desactivar música';
+
+document.body.appendChild(btnSonido);
+
+// Inicializar texto del botón y estado de música
+actualizarMusica();
+
+// Cambiar estado al hacer clic en el botón
+btnSonido.addEventListener('click', () => {
+  estadoMusica = (estadoMusica === 'on') ? 'off' : 'on';
+  localStorage.setItem('estadoMusica', estadoMusica);
+  actualizarMusica();
+});
+
+
+
+

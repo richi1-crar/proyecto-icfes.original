@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Juego de Mesa - Recorrido (Interactivo)</title>
+
+  <style>
+    .btn-volver {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 4px;
+      background: white;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-volver img { width: 24px; height: 24px; }
+
+    :root{
+      --bg:#e6f7ff; --card:#ffffff; --accent:#ff8c42; --muted:#6b7280;
+    }
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,var(--bg),#dff3ff);margin:0;padding:24px;color:#0f172a}
+    .wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:520px 1fr;gap:20px;align-items:start}
+    .board-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 8px 30px rgba(2,6,23,0.08)}
+    .board-area{position:relative;width:100%;height:520px;display:flex;align-items:center;justify-content:center}
+    #board-svg{width:480px;height:480px;border-radius:12px;background:linear-gradient(180deg,#bfe9ff,#d6f5ff);box-shadow:inset 0 -10px 40px rgba(0,0,0,0.03)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    button{background:var(--accent);border:none;color:white;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(255,140,66,0.15)}
+    button[disabled]{opacity:0.5;cursor:not-allowed}
+    .panel{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 8px 30px rgba(2,6,23,0.06)}
+    .players{display:flex;gap:8px;margin-bottom:12px}
+    .player{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:#f8fafc}
+    .token{width:18px;height:18px;border-radius:50%}
+    .status{margin-top:8px;color:var(--muted)}
+    .powers-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+    .power{padding:8px;border-radius:8px;background:linear-gradient(180deg,#fff,#fbfbff);box-shadow:0 2px 8px rgba(2,6,23,0.04);font-size:14px}
+    .log{height:220px;overflow:auto;padding:8px;border-radius:8px;background:#0f172a;color:#fff;font-size:13px}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:14px;color:var(--muted);font-size:13px}
+    .piece{position:absolute;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:0 6px 14px rgba(2,6,23,0.18)}
+
+    /* 🎨 Ventana de pregunta elegante */
+    .modal{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.5);z-index:1000;
+    }
+    .modal-content{
+      background:white;border-radius:16px;padding:24px;width:340px;max-width:90%;
+      box-shadow:0 8px 30px rgba(0,0,0,0.2);animation:pop 0.3s ease;
+    }
+    @keyframes pop{
+      from{transform:scale(0.8);opacity:0;}
+      to{transform:scale(1);opacity:1;}
+    }
+    .modal-content h3{margin-top:0;color:#ff8c42}
+    .modal-content textarea{
+      width:100%;height:80px;border:2px solid #ffd2a6;border-radius:8px;padding:8px;resize:none;font-size:14px;
+    }
+    .modal-content button{
+      margin-top:12px;width:100%;background:#ff8c42;font-weight:600;
+    }
+  </style>
+</head>
+
+<body>
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="inicios.png" alt="Volver">
+  </button>
+
+  <div class="wrap">
+    <div class="board-card">
+      <h2 style="margin:0 0 8px 0">Juego: Recorrido Tropical (Interactivo)</h2>
+      <div class="board-area">
+        <svg id="board-svg" viewBox="0 0 500 500">
+          <defs><radialGradient id="g1"><stop offset="0%" stop-color="#fff" stop-opacity="0.3"/><stop offset="100%" stop-color="#bfe9ff" stop-opacity="0.15"/></radialGradient></defs>
+          <rect x="0" y="0" width="500" height="500" rx="12" fill="url(#g1)"/>
+          <g id="squares" />
+          <g transform="translate(340,340) scale(0.9)">
+            <ellipse cx="0" cy="0" rx="60" ry="30" fill="#fff7e6" opacity="0.9" />
+          </g>
+        </svg>
+        <div id="pieces-container" style="position:absolute;left:10px;top:10px;width:480px;height:480px;pointer-events:none"></div>
+      </div>
+      <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="inicios.png" alt="Volver">
+  </button>
+  
+      <div class="controls">
+        <button id="rollBtn">🎲 Lanzar dado</button>
+        <button id="nextTurnBtn" disabled>➡️ Siguiente turno</button>
+        <button id="restartBtn">🔁 Reiniciar</button>
+        <div style="margin-left:auto;align-self:center" class="small">
+          Jugadores: 
+          <select id="playerCount"><option>2</option><option>3</option><option>4</option></select>
+        </div>
+      </div>
+
+      <div class="status small" id="statusText">Presiona "Lanzar dado" para empezar.</div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-top:0">Jugadores</h3>
+      <div class="players" id="playersList"></div>
+      <h3 style="margin-bottom:6px">Poderes en casillas</h3>
+      <div class="powers-list" id="powersBox"></div>
+      <h3 style="margin-top:12px">Registro de juego</h3>
+      <div class="log" id="log"></div>
+      <footer>Controles: Lanzar dado. El juego tiene poderes automáticos en casillas específicas. Diseño responsivo y animaciones profesionales.</footer>
+    </div>
+  </div>
+
+  <!-- 🌟 Modal de Pregunta -->
+  <div class="modal" id="questionModal">
+    <div class="modal-content">
+      <h3 id="questionText"></h3>
+      <textarea id="answerInput" placeholder="Escribe tu respuesta aquí..."></textarea>
+      <button id="sendAnswerBtn">Enviar respuesta</button>
+    </div>
+  </div>
+
+<script>
+const positions=[{x:60,y:420},{x:140,y:420},{x:220,y:420},{x:300,y:420},{x:380,y:420},{x:380,y:340},{x:300,y:340},{x:220,y:340},{x:140,y:340},{x:60,y:340},{x:60,y:260},{x:140,y:260},{x:220,y:260},{x:300,y:260},{x:380,y:260},{x:380,y:180},{x:300,y:180},{x:220,y:180},{x:140,y:180},{x:60,y:180}];
+const totalSquares=positions.length;
+const powers={3:{id:'boost',label:'⚡ Avanza 2'},6:{id:'back',label:'🔙 Retrocede 3'},9:{id:'extraturn',label:'🎲 Turno extra'},12:{id:'skip',label:'⛔ Pierde turno'},17:{id:'warp',label:'🌴 Teletransporta a 20'}};
+const svgNS='http://www.w3.org/2000/svg';
+const squaresGroup=document.getElementById('squares');
+for(let i=0;i<totalSquares;i++){const pos=positions[i];const g=document.createElementNS(svgNS,'g');g.setAttribute('transform',`translate(${pos.x-28},${pos.y-28})`);const rect=document.createElementNS(svgNS,'rect');rect.setAttribute('width',56);rect.setAttribute('height',56);rect.setAttribute('rx',10);rect.setAttribute('fill','#ffffff');rect.setAttribute('stroke','#d1e9f7');rect.setAttribute('stroke-width',2);const num=document.createElementNS(svgNS,'text');num.setAttribute('x',12);num.setAttribute('y',34);num.setAttribute('font-size',20);num.setAttribute('font-weight',700);num.setAttribute('fill','#0f172a');num.textContent=(i+1);g.appendChild(rect);g.appendChild(num);const pwr=powers[i+1];if(pwr){const badge=document.createElementNS(svgNS,'circle');badge.setAttribute('cx',46);badge.setAttribute('cy',10);badge.setAttribute('r',10);badge.setAttribute('fill','#fffbeb');badge.setAttribute('stroke','#ffd480');badge.setAttribute('stroke-width',1);const btxt=document.createElementNS(svgNS,'text');btxt.setAttribute('x',40);btxt.setAttribute('y',14);btxt.setAttribute('font-size',10);btxt.setAttribute('fill','#b45309');btxt.textContent=pwr.label[0];g.appendChild(badge);g.appendChild(btxt);}squaresGroup.appendChild(g);}
+let players=[],current=0,lock=false;
+const logEl=document.getElementById('log'),piecesContainer=document.getElementById('pieces-container');
+function initPlayers(n){players=[];const colors=['#ef4444','#059669','#3b82f6','#f97316'];for(let i=0;i<n;i++){players.push({id:i,name:`Jugador ${i+1}`,pos:0,color:colors[i],skip:false});}renderPlayersList();renderPieces();logEl.innerHTML='';addLog(`Juego iniciado con ${n} jugadores.`);}
+function renderPlayersList(){const box=document.getElementById('playersList');box.innerHTML='';players.forEach(p=>{const div=document.createElement('div');div.className='player';const sw=document.createElement('div');sw.className='token';sw.style.background=p.color;const name=document.createElement('div');name.innerHTML=`<strong>${p.name}</strong><div class="small">Pos: ${p.pos}</div>`;div.appendChild(sw);div.appendChild(name);box.appendChild(div);});}
+function renderPieces(){piecesContainer.innerHTML='';players.forEach(p=>{const div=document.createElement('div');div.className='piece';div.style.background=p.color;div.id='piece-'+p.id;div.style.width='36px';div.style.height='36px';div.textContent=p.id+1;piecesContainer.appendChild(div);setPiecePosition(p.id,p.pos);});}
+function setPiecePosition(id,posIdx){const el=document.getElementById('piece-'+id);const px=positions[Math.max(0,posIdx-1)]?.x??40;const py=positions[Math.max(0,posIdx-1)]?.y??480;const same=players.filter(pl=>pl.pos===posIdx).map(pl=>pl.id);const offsetIndex=same.indexOf(id);const offsetX=(offsetIndex%2)*20;const offsetY=Math.floor(offsetIndex/2)*20;el.style.transform=`translate(${px-18+offsetX}px,${py-54+offsetY}px)`;}
+function addLog(txt){const p=document.createElement('div');p.textContent=`[${new Date().toLocaleTimeString()}] ${txt}`;logEl.prepend(p);}
+const rollBtn=document.getElementById('rollBtn'),nextBtn=document.getElementById('nextTurnBtn'),restartBtn=document.getElementById('restartBtn'),playerCount=document.getElementById('playerCount'),statusText=document.getElementById('statusText'),powersBox=document.getElementById('powersBox');
+playerCount.addEventListener('change',()=>{initPlayers(parseInt(playerCount.value));});
+restartBtn.addEventListener('click',()=>{initPlayers(parseInt(playerCount.value));current=0;statusText.textContent='Reiniciado. Turno Jugador 1';addLog('Reinicio completo.');nextBtn.disabled=true;});
+rollBtn.addEventListener('click',async()=>{if(lock)return;lock=true;const player=players[current];if(player.skip){addLog(`${player.name} pierde este turno.`);player.skip=false;nextTurn();lock=false;return;}const dice=Math.floor(Math.random()*6)+1;animateRoll(dice);addLog(`${player.name} lanzó un ${dice}`);statusText.textContent=`${player.name} avanzará ${dice} casillas...`;await movePieceSmooth(current,dice);applySquareEffect(current);renderPlayersList();lock=false;});
+nextBtn.addEventListener('click',()=>{nextTurn();});
+function nextTurn(){current=(current+1)%players.length;statusText.textContent=`Turno de ${players[current].name}`;addLog(`Turno: ${players[current].name}`);}
+function animateRoll(value){rollBtn.textContent=`🎲 ${value}`;setTimeout(()=>{rollBtn.textContent='🎲 Lanzar dado';},800);}
+function movePieceSmooth(playerIdx,steps){return new Promise(resolve=>{const p=players[playerIdx];let target=p.pos+steps;if(target>totalSquares)target=totalSquares;const step=()=>{if(p.pos<target){p.pos++;setPiecePosition(playerIdx,p.pos);renderPlayersList();setTimeout(step,300);}else{addLog(`${p.name} llegó a ${p.pos}`);if(p.pos===totalSquares){addLog(`${p.name} ha ganado el juego! 🎉`);statusText.textContent=`${p.name} gana!`;rollBtn.disabled=true;nextBtn.disabled=true;}resolve();}};step();});}
+const preguntas={boost:{q:"En 'El coronel no tiene quien le escriba', la carta que nunca llega representa:",a:"esperanza"},back:{q:"En una noticia que dice: 'El río se desbordó por falta de control ambiental', la causa principal es:",a:"falta de control ambiental"},extraturn:{q:"Cuando un autor usa ironía en un texto, su intención principal suele ser:",a:"criticar"},skip:{q:"Si un texto argumentativo busca persuadir, su propósito principal es:",a:"convencer"},warp:{q:"En un poema donde se dice 'el cielo llora su tristeza', el autor usa una:",a:"personificación"}};
+const modal=document.getElementById('questionModal');
+const qText=document.getElementById('questionText');
+const input=document.getElementById('answerInput');
+const sendBtn=document.getElementById('sendAnswerBtn');
+let currentResolve=null,currentPregunta=null,currentPlayer=null;
+function askQuestion(pregunta,player){return new Promise(resolve=>{currentResolve=resolve;currentPregunta=pregunta;currentPlayer=player;qText.textContent=pregunta.q;input.value='';modal.style.display='flex';});}
+sendBtn.addEventListener('click',()=>{const resp=input.value.trim().toLowerCase();modal.style.display='none';if(!resp){addLog(`${currentPlayer.name} no respondió.`);currentResolve(false);return;}if(resp===currentPregunta.a){addLog(`${currentPlayer.name} respondió correctamente 🎉`);currentResolve(true);}else{addLog(`${currentPlayer.name} respondió mal 😢`);currentResolve(false);}});
+async function applySquareEffect(playerIdx){const p=players[playerIdx];const sq=p.pos;const effect=powers[sq];if(!effect){nextBtn.disabled=false;return;}const pregunta=preguntas[effect.id];if(pregunta){const correcta=await askQuestion(pregunta,p);if(!correcta){nextBtn.disabled=false;return;}addLog(`${p.name} activó poder: ${effect.label}`);}
+switch(effect.id){case'boost':p.pos=Math.min(totalSquares,p.pos+2);setPiecePosition(playerIdx,p.pos);addLog(`${p.name} avanza 2 a ${p.pos}`);break;case'back':p.pos=Math.max(0,p.pos-3);setPiecePosition(playerIdx,p.pos);addLog(`${p.name} retrocede 3 a ${p.pos}`);break;case'extraturn':addLog(`${p.name} recibe turno extra!`);nextBtn.disabled=true;lock=false;statusText.textContent=`${p.name} tiene turno extra!`;return;case'skip':p.skip=true;addLog(`${p.name} perderá su próximo turno.`);break;case'warp':p.pos=totalSquares;setPiecePosition(playerIdx,p.pos);addLog(`${p.name} fue teletransportado a la casilla final!`);statusText.textContent=`${p.name} teleport!`;addLog(`${p.name} ha ganado el juego! 🎉`);rollBtn.disabled=true;nextBtn.disabled=true;return;}
+if(p.pos===totalSquares){addLog(`${p.name} ha ganado el juego! 🎉`);statusText.textContent=`${p.name} gana!`;rollBtn.disabled=true;nextBtn.disabled=true;}else{nextBtn.disabled=false;}}
+function renderPowersBox(){powersBox.innerHTML='';for(const k in powers){const div=document.createElement('div');div.className='power';div.textContent=`${k}: ${powers[k].label}`;powersBox.appendChild(div);}}
+renderPowersBox();initPlayers(2);statusText.textContent='Listo. Empieza Jugador 1';
+</script>
+</body>
+</html>

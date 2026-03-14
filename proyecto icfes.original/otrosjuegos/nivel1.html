@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aventura Mágica — Mi Ñiño Lindo</title>
+  <style>
+    :root{
+      --bg:#0c0d13; --ink:#f7f7ff; --accent:#8b5cf6; --accent2:#22d3ee; --danger:#ef4444; --good:#10b981; --gold:#fbbf24;
+    }
+    html,body{height:100%;margin:0;background: radial-gradient(1200px 800px at 50% 10%, #141729, #0b0b10 60%, #07070b); color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";}
+    #ui{position:fixed;inset:0;pointer-events:none}
+    #topbar{position:absolute;left:0;right:0;top:0;padding:8px 12px;display:flex;gap:8px;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent)}
+    .pill{pointer-events:auto;display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,.15);background:rgba(13,14,22,.55);backdrop-filter: blur(6px);border-radius:999px;padding:.4rem .8rem;font-size:.9rem;}
+    .btn{pointer-events:auto;cursor:pointer}
+    #legend{position:absolute;left:12px;bottom:12px;max-width:540px;line-height:1.25;background:rgba(13,14,22,.55);border:1px solid rgba(255,255,255,.12);backdrop-filter: blur(6px);padding:10px 12px;border-radius:16px;font-size:.92rem}
+    #legend kbd{background:#121423;border:1px solid rgba(255,255,255,.15);padding:2px 6px;border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:.85em}
+    #toast{position:absolute;left:50%;transform:translate(-50%,0);top:56px;font-weight:600;letter-spacing:.3px}
+    #toast span{display:inline-block;padding:.5rem .8rem;border-radius:999px;background:rgba(17,18,28,.75);border:1px solid rgba(255,255,255,.12);}
+    canvas{display:block; width:100vw; height:100vh; image-rendering: pixelated;}
+    .bar{height:10px;background:#161826;border-radius:999px;border:1px solid rgba(255,255,255,.15);width:220px;overflow:hidden}
+    .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+    .fill.hp{background:linear-gradient(90deg,#ef4444,#f59e0b)}
+    .fill.xp{background:linear-gradient(90deg,#22c55e,#84cc16)}
+    .stat{display:flex;align-items:center;gap:.5rem}
+    .stat .label{opacity:.85;font-size:.8rem}
+    #pauseOverlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;backdrop-filter: blur(5px);background:rgba(0,0,0,.35)}
+    #pauseCard{padding:18px 20px;border:1px solid rgba(255,255,255,.12);background:rgba(12,14,24,.75);border-radius:20px;max-width:520px}
+    #mobile{position:absolute;right:12px;bottom:12px;display:flex;gap:10px;align-items:center}
+    .joy{pointer-events:auto;width:86px;height:86px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.06),rgba(0,0,0,.4));position:relative}
+    .stick{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25)}
+    .ab{display:flex;gap:10px}
+    .ab .key{pointer-events:auto;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(255,255,255,.12),rgba(0,0,0,.35));border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;font-weight:700}
+    @media (max-width: 860px){ #legend{max-width:unset; right:12px} }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="1060" height="640"></canvas>
+  <div id="ui">
+    <div id="topbar">
+      <div class="pill stat"><span class="label">❤️ Vida</span>
+        <div class="bar" aria-label="HP"><div id="hpFill" class="fill hp" style="width:100%"></div></div>
+      </div>
+      <div class="pill stat"><span class="label">💧 Mana</span>
+        <div class="bar" aria-label="Mana"><div id="manaFill" class="fill" style="width:100%"></div></div>
+      </div>
+      <div class="pill stat"><span class="label">⭐ Nivel</span>
+        <div class="bar" aria-label="XP" style="width:160px"><div id="xpFill" class="fill xp" style="width:0%"></div></div>
+      </div>
+      <div class="pill stat">🎒 <span id="bag">0</span> objetos</div>
+      <div class="pill btn" id="btnPause">⏸️ Pausa</div>
+      <div class="pill btn" id="btnMute">🔊 Sonido</div>
+    </div>
+    <div id="toast" aria-live="polite"></div>
+    <div id="legend">
+      <div><strong>Controles (PC):</strong> Moverte con <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o flechas • Dash <kbd>Espacio</kbd> • Hechizos: <kbd>J</kbd> Fuego 🔥, <kbd>K</kbd> Hielo ❄️, <kbd>L</kbd> Rayo ⚡ • Curación <kbd>H</kbd> 💫 • Pausa <kbd>P</kbd>.</div>
+      <div style="opacity:.85;margin-top:.35rem">Objetivo: Explora, derrota criaturas, recoge <em>reliquias</em> ✨, sube de nivel y entra en el portal 🌀 para avanzar.</div>
+    </div>
+    <div id="pauseOverlay">
+      <div id="pauseCard">
+        <h3 style="margin:0 0 8px">Juego en pausa</h3>
+        <p style="margin:0 0 12px;opacity:.9">Respira, héroe. La magia te espera.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="pill btn" id="btnResume">▶️ Continuar</div>
+          <div class="pill btn" id="btnRestart">🔁 Reiniciar nivel</div>
+          <div class="pill btn" id="btnHow">📜 Ayuda</div>
+        </div>
+      </div>
+    </div>
+    <div id="mobile">
+      <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
+      <div class="ab">
+        <div class="key" data-k="J">J</div>
+        <div class="key" data-k="K">K</div>
+        <div class="key" data-k="L">L</div>
+        <div class="key" data-k="H">H</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// --- Utilidades ---
+const rand = (a,b)=>Math.random()*(b-a)+a;
+const clamp=(v,mi,ma)=>Math.max(mi,Math.min(ma,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const dist2=(a,b)=>{const dx=a.x-b.x, dy=a.y-b.y; return dx*dx+dy*dy};
+
+// --- Audio sencillo WebAudio ---
+let audioCtx=null, masterGain=null, muted=false;
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = muted?0:0.25; masterGain.connect(audioCtx.destination);
+}
+function beep(type=0, dur=0.08, freq=440){
+  if(!audioCtx) return; if(muted) return;
+  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+  o.type = ['sine','triangle','sawtooth','square'][type%4];
+  o.frequency.value=freq; o.connect(g); g.connect(masterGain);
+  const now=audioCtx.currentTime; g.gain.setValueAtTime(0.001, now);
+  g.gain.exponentialRampToValueAtTime(0.3, now+0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+  o.start(now); o.stop(now+dur+0.02);
+}
+function chord(freqs){ freqs.forEach((f,i)=>setTimeout(()=>beep(1,0.12,f), i*40)); }
+
+// --- Canvas & world ---
+const cv = document.getElementById('game');
+const ctx = cv.getContext('2d');
+let W=innerWidth, H=innerHeight; function resize(){ W=innerWidth; H=innerHeight; cv.width=W; cv.height=H; }
+addEventListener('resize', resize); resize();
+
+// --- Entrada ---
+const keys={};
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true; if(e.key===' '||'jklh'.includes(e.key.toLowerCase())) e.preventDefault(); if(!audioCtx) initAudio();});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+// Mobile buttons
+for(const el of document.querySelectorAll('.ab .key')){
+  el.addEventListener('touchstart', e=>{e.preventDefault(); keys[el.dataset.k.toLowerCase()]=true; initAudio();});
+  el.addEventListener('touchend', e=>{e.preventDefault(); keys[el.dataset.k.toLowerCase()]=false;});
+}
+// Virtual joystick
+const joy=document.getElementById('joy'); const stick=document.getElementById('stick');
+let joyTouchId=null, joyVec={x:0,y:0};
+function handleJoy(e,type){ const rect=joy.getBoundingClientRect(); const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  let t=null; for(const touch of e.changedTouches){ if(joyTouchId===null||joyTouchId===touch.identifier){ t=touch; break; } }
+  if(!t) return; const x=t.clientX, y=t.clientY; const dx=x-cx, dy=y-cy; const r=rect.width/2; let vx=dx/r, vy=dy/r; const m=Math.hypot(vx,vy); if(m>1){vx/=m; vy/=m;}
+  if(type==='start'){ joyTouchId=t.identifier; joyVec={x:vx,y:vy}; }
+  if(type==='move'){ joyVec={x:vx,y:vy}; }
+  if(type==='end'){ joyTouchId=null; joyVec={x:0,y:0}; }
+  stick.style.transform=`translate(${vx*24}px, ${vy*24}px)`;
+}
+joy.addEventListener('touchstart', e=>{handleJoy(e,'start')});
+joy.addEventListener('touchmove', e=>{handleJoy(e,'move')});
+joy.addEventListener('touchend', e=>{handleJoy(e,'end')});
+
+// --- UI ---
+const hpFill=document.getElementById('hpFill');
+const manaFill=document.getElementById('manaFill');
+const xpFill=document.getElementById('xpFill');
+const bagEl=document.getElementById('bag');
+const toast=document.getElementById('toast');
+let toastTimer=null; function showToast(msg){ clearTimeout(toastTimer); toast.innerHTML = `<span>${msg}</span>`; toastTimer=setTimeout(()=>toast.innerHTML='', 2000); }
+
+const pauseOverlay=document.getElementById('pauseOverlay');
+const btnPause=document.getElementById('btnPause');
+const btnResume=document.getElementById('btnResume');
+const btnRestart=document.getElementById('btnRestart');
+const btnHow=document.getElementById('btnHow');
+const btnMute=document.getElementById('btnMute');
+let paused=false;
+function setPaused(v){ paused=v; pauseOverlay.style.display = v? 'flex':'none'; }
+btnPause.onclick=()=>setPaused(true);
+btnResume.onclick=()=>setPaused(false);
+btnRestart.onclick=()=>{ loadLevel(currentLevel.index); setPaused(false); };
+btnHow.onclick=()=>showToast('Mover: WASD • Dash: Espacio • Fuego: J • Hielo: K • Rayo: L • Curación: H');
+btnMute.onclick=()=>{ muted=!muted; if(masterGain){ masterGain.gain.value = muted?0:0.25; } btnMute.textContent = muted? '🔇 Silencio' : '🔊 Sonido'; };
+
+// --- Entidades ---
+class Entity{ constructor(x,y){ this.x=x; this.y=y; this.vx=0; this.vy=0; this.r=14; this.dead=false; } update(dt){} draw(){} }
+
+class Player extends Entity{
+  constructor(x,y){ super(x,y); this.speed=210; this.hp=100; this.hpMax=100; this.mana=100; this.manaMax=100; this.xp=0; this.level=1; this.inv=0; this.dash=0; this.ifr=0; this.dir={x:1,y:0}; }
+  update(dt){
+    let ix = (keys['a']||keys['arrowleft']?-1:0) + (keys['d']||keys['arrowright']?1:0) + joyVec.x*1.2;
+    let iy = (keys['w']||keys['arrowup']?-1:0) + (keys['s']||keys['arrowdown']?1:0) + joyVec.y*1.2;
+    const m=Math.hypot(ix,iy); if(m>1){ ix/=m; iy/=m;}
+    if(m>0.01) this.dir={x:ix,y:iy};
+    const sp = this.speed * (this.dash>0?2.8:1);
+    this.vx = ix*sp; this.vy = iy*sp;
+    this.x += this.vx*dt; this.y += this.vy*dt;
+    this.x = clamp(this.x, 40, W-40); this.y=clamp(this.y, 60, H-40);
+    if(this.dash>0) this.dash-=dt; if(this.ifr>0) this.ifr-=dt;
+
+    // Acciones
+    if(keys[' '] && this.mana>=5 && this.dash<=0){ this.dash=0.22; this.mana-=5; beep(3,0.06,160); showToast('💨 ¡Dash!');}
+    if(keys['j']) castSpell('fire');
+    if(keys['k']) castSpell('ice');
+    if(keys['l']) castSpell('bolt');
+    if(keys['h']) heal();
+  }
+  draw(){
+    // aureola
+    ctx.save();
+    const glow=ctx.createRadialGradient(this.x,this.y,8,this.x,this.y,48); glow.addColorStop(0,'rgba(139,92,246,.55)'); glow.addColorStop(1,'rgba(34,211,238,0)');
+    ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(this.x,this.y,48,0,Math.PI*2); ctx.fill();
+    // cuerpo
+    ctx.translate(this.x,this.y);
+    ctx.rotate(Math.atan2(this.dir.y,this.dir.x));
+    ctx.fillStyle='#c7d2fe'; ctx.strokeStyle='rgba(255,255,255,.25)';
+    ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    // varita
+    ctx.fillStyle='#fbbf24'; ctx.fillRect(8,-2,16,4);
+    // ojos
+    ctx.fillStyle='#0b0b10'; ctx.fillRect(-3,-4,4,3); ctx.fillRect(-3,2,4,3);
+    ctx.restore();
+  }
+}
+
+class Enemy extends Entity{
+  constructor(x,y,type='slime'){ super(x,y); this.type=type; this.hp= type==='wisp'?25: type==='golem'?60:35; this.speed= type==='golem'?90: (type==='wisp'?160:120); this.cool=rand(0.4,1.1); this.r = type==='golem'?18:14; }
+  update(dt){
+    const dx = player.x - this.x, dy= player.y - this.y; const d = Math.hypot(dx,dy)||1; const k = this.speed/d;
+    this.vx = dx*k; this.vy = dy*k; this.x += this.vx*dt; this.y += this.vy*dt;
+    this.cool-=dt; if(this.cool<=0){ this.cool= rand(0.8,1.6); // disparo
+      if(this.type!=='golem') spawnProjectile(this.x,this.y, Math.atan2(dy,dx), 220, 'dark', 8); else spawnShockwave(this.x,this.y);
+    }
+  }
+  draw(){
+    ctx.save(); ctx.translate(this.x,this.y);
+    if(this.type==='slime'){
+      ctx.fillStyle='rgba(34,197,94,.85)'; ctx.beginPath(); ctx.ellipse(0,6,16,12,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#111'; ctx.fillRect(-6,-2,4,3); ctx.fillRect(2,-2,4,3);
+    } else if(this.type==='wisp'){
+      const g=ctx.createRadialGradient(0,0,2,0,0,18); g.addColorStop(0,'rgba(59,130,246,.9)'); g.addColorStop(1,'rgba(59,130,246,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill();
+    } else if(this.type==='golem'){
+      ctx.fillStyle='rgba(148,163,184,.95)'; ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#0b0b10'; ctx.fillRect(-6,-4,4,3); ctx.fillRect(2,-4,4,3);
+    }
+    ctx.restore();
+  }
+}
+
+class Pickup extends Entity{ constructor(x,y,kind='relic'){ super(x,y); this.kind=kind; this.r=12; this.t=0; }
+  update(dt){ this.t+=dt; }
+  draw(){ ctx.save(); ctx.translate(this.x,this.y); const bob=Math.sin(this.t*4)*3; let col='#fbbf24'; if(this.kind==='mana') col='#22d3ee'; if(this.kind==='heart') col='#ef4444';
+    ctx.shadowColor=col; ctx.shadowBlur=18; ctx.fillStyle=col; ctx.beginPath(); ctx.arc(0,bob,10,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; ctx.restore(); }
+}
+
+class Portal extends Entity{ constructor(x,y){ super(x,y); this.r=24; this.t=0; }
+  update(dt){ this.t+=dt; }
+  draw(){ ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(this.t*1.2); const g=ctx.createConicGradient(0,0,0,0,Math.PI*2); g.addColorStop(0,'#8b5cf6'); g.addColorStop(.5,'#22d3ee'); g.addColorStop(1,'#8b5cf6');
+    ctx.strokeStyle=g; ctx.lineWidth=6; ctx.beginPath(); ctx.arc(0,0,24,0,Math.PI*2); ctx.stroke(); ctx.restore(); }
+}
+
+// Proyectiles
+const projectiles=[];
+function spawnProjectile(x,y,angle,speed,type='fire', dmg=15){ projectiles.push({x,y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, t:0, type, dmg, r: type==='dark'?6:5}); if(type==='fire') beep(2,0.05,520); if(type==='ice') beep(0,0.06,360); if(type==='bolt') beep(3,0.05,720); if(type==='dark') beep(1,0.04,240); }
+function spawnShockwave(x,y){ projectiles.push({x,y, vx:0,vy:0, t:0, type:'shock', dmg:12, r:4}); beep(1,0.08,180); }
+
+// --- Hechizos ---
+function castSpell(kind){
+  const cost = {fire:12, ice:10, bolt:16}[kind];
+  if(player.mana<cost) return;
+  player.mana-=cost;
+  const ang=Math.atan2(player.dir.y, player.dir.x);
+  if(kind==='fire'){
+    for(let i=-1;i<=1;i++) spawnProjectile(player.x+player.dir.x*18, player.y+player.dir.y*18, ang+i*0.08, 360, 'fire', 18);
+    showToast('🔥 Cono de fuego');
+  }
+  if(kind==='ice'){
+    spawnProjectile(player.x+player.dir.x*18, player.y+player.dir.y*18, ang, 300, 'ice', 10);
+    showToast('❄️ Orbe gélido');
+  }
+  if(kind==='bolt'){
+    spawnProjectile(player.x+player.dir.x*18, player.y+player.dir.y*18, ang, 520, 'bolt', 22);
+    showToast('⚡ Rayo travieso');
+  }
+}
+function heal(){ if(player.mana<18 || player.hp>=player.hpMax) return; player.mana-=18; player.hp=clamp(player.hp+24,0,player.hpMax); chord([440,554,659]); showToast('💫 Curación'); }
+
+// --- Niveles ---
+const levels = [
+  { index:0, name:'Bosque Lírico', theme:0, enemies:8, pickups:4 },
+  { index:1, name:'Cuevas de Neón', theme:1, enemies:12, pickups:5 },
+  { index:2, name:'Ruinas del Tiempo', theme:2, enemies:16, pickups:6 },
+];
+let currentLevel = levels[0];
+let entities=[], enemies=[], pickups=[], portal=null, player=null, time=0; 
+
+function loadLevel(i=0){
+  currentLevel = levels[i%levels.length];
+  entities=[]; enemies=[]; pickups=[]; projectiles.length=0; portal=null; time=0;
+  player = new Player(W/2, H/2);
+  // Enemigos variados
+  const types=['slime','wisp','golem'];
+  for(let k=0;k<currentLevel.enemies;k++){
+    const t= types[Math.floor(Math.random()*types.length)];
+    const ex=rand(60,W-60), ey=rand(100,H-80);
+    enemies.push(new Enemy(ex,ey,t));
+  }
+  // Recolección
+  for(let k=0;k<currentLevel.pickups;k++){
+    const kinds=['relic','mana','heart']; const kind=kinds[Math.floor(Math.random()*kinds.length)];
+    pickups.push(new Pickup(rand(60,W-60), rand(100,H-80), kind));
+  }
+  showToast(`🗺️ ${currentLevel.name}`);
+}
+
+// --- Fondo/tiles procedural ---
+function drawBackground(){
+  const theme=currentLevel.theme; // 0 bosque, 1 cueva, 2 ruinas
+  const grd = ctx.createLinearGradient(0,0,0,H);
+  if(theme===0){ grd.addColorStop(0,'#0b1220'); grd.addColorStop(1,'#0b0f17'); }
+  if(theme===1){ grd.addColorStop(0,'#101024'); grd.addColorStop(1,'#0a0a16'); }
+  if(theme===2){ grd.addColorStop(0,'#12101c'); grd.addColorStop(1,'#0a0b12'); }
+  ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+  // estrellas/partículas
+  const n=140; ctx.globalAlpha=0.6; ctx.fillStyle='rgba(255,255,255,.12)';
+  for(let i=0;i<n;i++){
+    const x=(i*137 + (time*20))%W; const y=((i*97)%H);
+    ctx.fillRect(x, y, 2,2);
+  }
+  ctx.globalAlpha=1;
+}
+
+// --- Colisiones ---
+function circleHit(ax,ay,ar, bx,by,br){ const dx=ax-bx, dy=ay-by; return dx*dx+dy*dy <= (ar+br)*(ar+br); }
+
+// --- HUD sync ---
+function syncHUD(){ hpFill.style.width = (player.hp/player.hpMax*100).toFixed(1)+'%'; manaFill.style.width=(player.mana/player.manaMax*100).toFixed(1)+'%';
+  const xpPct = (player.xp % 100); xpFill.style.width = xpPct+'%'; bagEl.textContent = player.inv; }
+
+// --- Game loop ---
+let last=0; function loop(t){ const dt = Math.min(0.033, (t-last)/1000||0.016); last=t; if(!paused){ update(dt); draw(); } requestAnimationFrame(loop); }
+
+function update(dt){ time+=dt; player.update(dt);
+  enemies.forEach(e=>e.update(dt)); pickups.forEach(p=>p.update(dt)); if(portal) portal.update(dt);
+  // Proyectiles
+  for(const p of projectiles){ p.t+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; if(p.type==='shock'){ p.r+=220*dt; if(p.r>120) p.t=999; } }
+  // Daño a enemigos
+  for(const p of projectiles){ if(p.type==='dark') continue; for(const e of enemies){ if(circleHit(p.x,p.y,p.r, e.x,e.y,e.r)){ e.hp -= p.dmg; p.t=999; if(e.hp<=0){ e.dead=true; player.xp+=10; chord([520,660,830]); if(Math.random()<0.25) pickups.push(new Pickup(e.x,e.y, ['relic','mana','heart'][Math.floor(Math.random()*3)])); } } } }
+  // Proyectiles enemigos
+  for(const p of projectiles){ if(p.type!=='dark' && p.type!=='shock') continue; if(circleHit(p.x,p.y,p.r, player.x,player.y,14)){ if(player.ifr<=0){ player.hp -= (p.type==='shock'?10:14); player.ifr=0.8; beep(3,0.05,120); if(player.hp<=0){ gameOver(); return; } } p.t=999; } }
+  // Colisión cuerpo enemigo
+  for(const e of enemies){ if(circleHit(player.x,player.y,14, e.x,e.y,e.r)){ if(player.ifr<=0){ player.hp-=8; player.ifr=0.7; beep(3,0.05,140); if(player.hp<=0){ gameOver(); return; } } } }
+  // Recoger
+  for(const it of pickups){ if(circleHit(player.x,player.y,16, it.x,it.y,10)){ it.dead=true; if(it.kind==='relic'){ player.inv++; player.xp+=15; beep(0,0.06,700); }
+      if(it.kind==='mana'){ player.mana = clamp(player.mana+22, 0, player.manaMax); beep(0,0.05,500); }
+      if(it.kind==='heart'){ player.hp = clamp(player.hp+18, 0, player.hpMax); beep(0,0.05,300); }
+  } }
+  // Limpieza
+  for(let i=projectiles.length-1;i>=0;i--) if(projectiles[i].t>2.5) projectiles.splice(i,1);
+  for(let i=enemies.length-1;i>=0;i--) if(enemies[i].dead) enemies.splice(i,1);
+  for(let i=pickups.length-1;i>=0;i--) if(pickups[i].dead) pickups.splice(i,1);
+
+  // Nivel completado => portal
+  if(!portal && enemies.length===0){ portal=new Portal(rand(80,W-80), rand(120,H-120)); showToast('🌀 ¡Se abrió un portal!'); chord([392,494,659]); }
+  if(portal && circleHit(player.x,player.y,16, portal.x,portal.y,24)) nextLevel();
+
+  // Regeneración lenta
+  player.mana = clamp(player.mana + dt*5, 0, player.manaMax);
+  syncHUD();
+}
+
+function draw(){ drawBackground();
+  // Partículas suelo
+  ctx.fillStyle='rgba(255,255,255,.06)'; for(let i=0;i<60;i++){ const x=(i*77+time*30)%W; const y=(i*53)%H; ctx.fillRect(x,y,2,2); }
+
+  // Entidades
+  pickups.forEach(p=>p.draw());
+  if(portal) portal.draw();
+  enemies.forEach(e=>e.draw());
+  // Proyectiles
+  for(const p of projectiles){ ctx.save(); ctx.translate(p.x,p.y); if(p.type==='fire'){ ctx.fillStyle='rgba(251,191,36,.95)'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill(); }
+    if(p.type==='ice'){ ctx.strokeStyle='rgba(34,211,238,.9)'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.stroke(); }
+    if(p.type==='bolt'){ ctx.strokeStyle='rgba(147,197,253,.9)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-3,-3); ctx.lineTo(3,0); ctx.lineTo(-3,3); ctx.stroke(); }
+    if(p.type==='dark'){ ctx.fillStyle='rgba(139,92,246,.9)'; ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.fill(); }
+    if(p.type==='shock'){
+      ctx.strokeStyle='rgba(148,163,184,.7)'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,p.r,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.restore(); }
+
+  player.draw();
+}
+
+function gameOver(){ showToast('💀 Has caído... 🔁 Reinicia'); chord([196,174,130]); setPaused(true); }
+function nextLevel(){ const next = (currentLevel.index+1)%levels.length; loadLevel(next); showToast('🚪 Siguiente zona'); }
+
+// Pausa con tecla
+addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='p') setPaused(!paused); });
+
+// Start
+loadLevel(0); requestAnimationFrame(loop);
+</script>
+</body>
+</html>

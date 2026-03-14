@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>preguntas</title>
+
+  <style>
+    body {
+      background-image: url(inicio.jpg);
+      background-size: 800px 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      background-attachment: fixed; 
+      color: rgb(20, 16, 16);
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+      width: 100px
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+      background-color: rgba(10, 1, 63, 0.76);
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background-color: rgba(136, 115, 209, 0.548);
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      color: #000;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .question label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 30px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #3a78c2;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .explicacion-btn {
+      background-color: #888;
+      margin-left: 10px;
+      font-size: 14px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      text-align: center;
+      display: block;
+      margin: 10px auto 0 auto; 
+    }
+    .explicacion-btn:hover {
+      background-color: #666;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: red;
+    }
+
+    #gifDialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+    
+    #gifDialog img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+
+    #gifDialog button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #gifDialogIncorrecto {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(162, 171, 185, 0.973);
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+
+    #gifDialogIncorrecto img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+    #gifDialogIncorrecto button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #e24a4a;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #btnAdjuntarVideo {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 10px;
+    }
+
+    #btnSiguiente {
+      position: fixed;
+      top: 60px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 40px;
+    }
+
+    #btnSiguiente:hover {
+      background-color: #3a78c2;
+    }
+.btn-volver {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.btn-volver img {
+  width: 36px; 
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.btn-volver img:hover {
+  transform: scale(1.1);
+}
+
+    
+    
+    
+  </style>
+</head>
+<body>
+<script src="script.js"></script>
+
+  <!-- Botón volver -->
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="D:\proyecto icfes.original" alt="Volver">
+  </button>
+
+  <a href="videos1.html" id="btnAdjuntarVideo" title="Ver videos"> VIDEOS EXPLICATIVOS</a>
+  <a href="pregunta2.html" id="btnSiguiente" title="Siguiente"> SIGUIENTE</a>
+
+  <h1>NIVEL 1</h1>
+  <h1>Prueba Estilo Saber 11 </h1>
+
+  <div class="form-container">
+    <form id="quizForm">
+      <div class="question">
+        <p> RESPONDA LAS PREGUNTAS 8 Y 9 DE ACUERDO CON LA SIGUIENTE INFORMACIÓN</p>
+
+        <p><b>LA PÉRDIDA DE LA PRIVACIDAD</b></p>
+      </p>
+         El primer efecto de la globalización de la comunicación por Internet ha sido la crisis de la
+noción de límite. El concepto de límite es tan antiguo como la especie humana, incluso como
+todas las especies animales. La etología nos enseña que todos los animales reconocen que
+hay a su alrededor y en torno a sus semejantes una burbuja de respeto, un área territorial
+dentro de la cual se sienten seguros, y reconocen como adversario al que sobrepasa dicho
+límite. La antropología cultural nos ha demostrado que esta burbuja varía según las culturas,
+y que la proximidad, que para unos pueblos es expresión de confianza, para otros es una
+intrusión y una agresión.
+En el caso de los humanos, esta zona de protección se ha extendido del individuo a la comunidad.
+El límite —de la ciudad, de la región, del reino— siempre se ha considerado una especie de
+ampliación colectiva de las burbujas de protección individual. Los muros pueden servir para
+que un régimen despótico mantenga a sus súbditos en la ignorancia de lo que sucede fuera
+de ellos, pero en general garantizan a los ciudadanos que los posibles intrusos no tengan
+conocimiento de sus costumbres, de sus riquezas, de sus inventos. La Gran Muralla China
+no solo defendía de las invasiones a los súbditos del Imperio Celeste, sino que garantizaba,
+además, el secreto de la producción de seda.
+No obstante, con Internet se rompen los límites que nos protegían y la privacidad queda
+expuesta. Esta desaparición de las fronteras ha provocado dos fenómenos opuestos. Por un
+lado, ya no hay comunidad nacional que pueda impedir a sus ciudadanos que sepan lo que
+sucede en otros países, y pronto será imposible impedir que el súbdito de cualquier dictadura
+conozca en tiempo real lo que ocurre en otros lugares; además, en medio de una oleada
+migratoria imparable, se forman naciones por fuera de las fronteras físicas: es cada vez más
+fácil para una comunidad musulmana de Roma establecer vínculos con una comunidad
+musulmana de Berlín. Por otro lado, el severo control que los Estados ejercían sobre las
+actividades de los ciudadanos ha pasado a otros centros de poder que están técnicamente
+preparados (aunque no siempre con medios legales) para saber a quién hemos escrito, qué
+hemos comprado, qué viajes hemos hecho, cuáles son nuestras curiosidades enciclopédicas y
+hasta nuestras preferencias sexuales. El gran problema del ciudadano celoso no es defenderse
+de los hackers sino de las cookies1, y de todas esas otras maravillas tecnológicas que permiten
+recoger información sobre cada uno de nosotros.
+       
+<p>Adaptado de: Eco, U. (2007). La pérdida de la privacidad. A paso de cangrejo. Bogotá: Random House Mondadori.</p>
+
+        <p>8.¿Cuál de los siguientes enunciados sintetiza mejor el contenido del primer párrafo?</p>
+        <label><input type="radio" name="q1" value="a"> A. Una profunda tradición intelectual ha configurado el concepto de límite como el espacio de defensa que crean los seres a su alrededor.</label>
+        <label><input type="radio" name="q1" value="b"> B.Internet ha generado cambios en el concepto tradicional de límite, tal como lo define la etología y la antropología. </label>
+        <label><input type="radio" name="q1" value="c"> C.Por naturaleza los seres vivos exigen el respeto del propio espacio, y esto aplica incluso para las relaciones que se dan en Internet. </label>
+        <label><input type="radio" name="q1" value="d"> D. Los estudios de la etología y la antropología nos permiten comprender por qué Internet vulnera la intimidad de las personas.</label>
+
+       
+          
+      <p>9.En el tercer párrafo, cuando el autor menciona a las naciones que se forman fuera de las fronteras físicas, hace referencia a</p>
+         <label><input type="radio" name="q1" value="a"> A.los individuos de una misma cultura que viven en territorios diferentes.</label>
+        <label><input type="radio" name="q1" value="b"> B.la fluencia migratoria que genera el amplio número de turistas. </label>
+        <label><input type="radio" name="q1" value="c"> C. el encuentro virtual de personas de pensamientos diferentes.</label>
+        <label><input type="radio" name="q1" value="d"> D.las comunidades virtuales que se crean en el ciberespacio. </label>
+      
+        
+      </div>
+  
+    
+   
+
+   
+
+      <button type="button" onclick="verificarRespuestas()">Enviar respuestas</button>
+    </form>
+
+    <div id="resultado"></div>
+  </div>
+
+  <div id="gifDialog">
+    <img src="gifcorrec.gif" alt="¡Correcto!" />
+    <div>¡Respuesta Correcta! 🎉</div>
+    <button onclick="cerrarGifDialog()">Cerrar</button>
+  </div>
+
+  <div id="gifDialogIncorrecto">
+    <img src="gifincorrec.gif" alt="¡Incorrecto!" />
+    <div>Respuesta Incorrecta 😢</div>
+    <button onclick="cerrarGifIncorrecto()">Cerrar</button>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <p id="modal-text"></p>
+    </div>
+  </div>
+
+  <script>
+    const respuestasCorrectas = {
+      q1: "d",
+      q2: "c"
+    };
+
+    const explicaciones = {
+      q1: {
+        a: "En el texto se menciona que Soledad se sirvió un café, pero es un detalle muy pequeño y no representa el tema central ni el sentido del relato.",
+        b: "Soledad es el nombre de la protagonista, pero no hay ninguna referencia al sol en el texto. El clima es frío y lluvioso.",
+        c: "Aunque Soledad es periodista, el relato se centra en el accidente y sus consecuencias, no en el reportaje.",
+        d: "Correcto. Resume la historia: las cicatrices físicas y emocionales del accidente, un 'escrito en la piel'."
+      },
+
+      
+
+      q2: {
+        a: "en el texto habla de una persona unica",
+        b: "Soledad es el nombre de la protagonista, pero no hay ninguna referencia al sol en el texto. El clima es frío y lluvioso.",
+        c: "Aunque Soledad es periodista, .",
+        d: "Correcto. Resume la historia: las cicatrices físicas y emocionales del accidente, un 'escrito en la piel'."
+        
+      }
+    };
+
+    function verificarRespuestas() {
+      let respondidas = 0;
+      let algunaCorrecta = false;
+      let algunaIncorrecta = false;
+      let preguntaMostrada = "";
+
+      for (let pregunta in respuestasCorrectas) {
+        const seleccionada = document.querySelector(`input[name="${pregunta}"]:checked`);
+        const correcta = respuestasCorrectas[pregunta];
+
+        if (seleccionada) {
+          respondidas++;
+          const valor = seleccionada.value;
+
+          if (valor === correcta) {
+            algunaCorrecta = true;
+            preguntaMostrada = pregunta;
+          } else {
+            algunaIncorrecta = true;
+            preguntaMostrada = pregunta;
+          }
+        }
+      }
+
+      if (respondidas === 0) {
+        alert("Debes seleccionar al menos una respuesta antes de enviar.");
+        return;
+      }
+
+      if (algunaCorrecta) {
+        mostrarGifDialog(preguntaMostrada);
+      } else if (algunaIncorrecta) {
+        mostrarGifIncorrecto(preguntaMostrada);
+      }
+
+      sessionStorage.setItem("respondioPregunta1", "true");
+    }
+
+    function mostrarGifDialog(pregunta) {
+      const gifDialog = document.getElementById("gifDialog");
+      gifDialog.style.display = "block";
+
+      const btn = document.createElement("button");
+      btn.className = "explicacion-btn";
+      btn.textContent = "Ver explicación";
+      btn.onclick = () => mostrarExplicacion(pregunta, respuestasCorrectas[pregunta]);
+
+      const existingBtn = gifDialog.querySelector(".explicacion-btn");
+      if (existingBtn) existingBtn.remove();
+
+      gifDialog.appendChild(btn);
+    }
+
+    function cerrarGifDialog() {
+      document.getElementById("gifDialog").style.display = "none";
+    }
+
+    function mostrarGifIncorrecto(pregunta) {
+      const gifDialog = document.getElementById("gifDialogIncorrecto");
+      gifDialog.style.display = "block";
+
+      const seleccionada = document.querySelector(`input[name="${pregunta}"]:checked`);
+      const valor = seleccionada ? seleccionada.value : null;
+
+      const btn = document.createElement("button");
+      btn.className = "explicacion-btn";
+      btn.textContent = "Ver explicación";
+      btn.onclick = () => mostrarExplicacion(pregunta, valor);
+
+      const existingBtn = gifDialog.querySelector(".explicacion-btn");
+      if (existingBtn) existingBtn.remove();
+
+      gifDialog.appendChild(btn);
+    }
+
+    function cerrarGifIncorrecto() {
+      document.getElementById("gifDialogIncorrecto").style.display = "none";
+    }
+
+    function mostrarExplicacion(pregunta, opcion) {
+      const modal = document.getElementById("modal");
+      const texto = document.getElementById("modal-text");
+
+      cerrarGifDialog();
+      cerrarGifIncorrecto();
+
+      if (explicaciones[pregunta] && explicaciones[pregunta][opcion]) {
+        texto.textContent = explicaciones[pregunta][opcion];
+      } else {
+        texto.textContent = "No hay explicación disponible para esta opción.";
+      }
+
+      modal.style.display = "block";
+    }
+
+    function cerrarModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("modal");
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+
+  document.addEventListener("DOMContentLoaded", function () {
+  const btnSiguiente = document.getElementById("btnSiguiente");
+  
+  btnSiguiente.addEventListener("click", function (event) {
+    event.preventDefault(); // Evita acciones por defecto
+    window.location.href = "file:///D:/proyecto%20icfes/pregunta4.html"; // Redirige al archivo local
+  });
+});
+
+          
+      
+    
+  </script>
+</body>
+</html>

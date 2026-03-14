@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sopa de Letras Literaria</title>
+   <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="inicios.png" alt="Volver">
+  </button>
+  <style>
+    .btn-volver {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 4px;
+      background: white;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-volver img {
+      width: 24px;
+      height: 24px;
+    }
+
+    #hint {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #00ffaa;
+    }
+    body {
+      font-family: 'Georgia', serif;
+      background: linear-gradient(135deg, #f5f0ff, #e0f7ff);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #4b0082;
+      text-shadow: 2px 2px 5px #fff;
+    }
+    #question {
+      font-size: 20px;
+      margin: 15px 0;
+      color: #222;
+      font-style: italic;
+    }
+    #wordlist {
+      margin: 20px 0;
+      font-size: 18px;
+    }
+    #wordlist span {
+      margin: 0 8px;
+      padding: 6px 10px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+    #wordlist span:hover {
+      background: #d8b6ff;
+      color: #000;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(12, 40px);
+      justify-content: center;
+      gap: 2px;
+      margin: 0 auto;
+    }
+    .cell {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 5px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.2s;
+    }
+    .cell:hover { background: #f3e5ff; }
+    .selected { background: #cce5ff; }
+    .found { background: #90ee90; color: #000; }
+    #message {
+      margin-top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #4b0082;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Sopa de Letras Literaria 📚</h1>
+  <div id="question"></div>
+  <div id="wordlist"></div>
+  <div id="grid"></div>
+  <div id="message"></div>
+
+<script>
+const words = [
+  "POESIA","NOVELA","CUENTO","AUTOR","LECTURA",
+  "METAFORA","VERSO","GABRIEL","REALISMO","ROMANTICISMO"
+];
+
+const questions = [
+  "🖋️ ¿Qué género literario utiliza versos y ritmo?",
+  "📖 ¿Cómo se llama una narración larga de ficción?",
+  "📚 ¿Qué nombre recibe una narración corta?",
+  "👨‍🏫 ¿Cómo se llama quien escribe una obra?",
+  "📘 ¿Cómo se llama la acción de leer?",
+  "✨ Figura literaria que compara sin usar 'como' o 'parece'.",
+  "🎵 Cada línea o renglón de un poema se llama...",
+  "🇨🇴 ¿Cómo se llama el autor de 'Cien años de soledad'?",
+  "🌎 Corriente literaria que retrata la vida cotidiana con detalle.",
+  "💔 Movimiento artístico que exaltaba los sentimientos y la naturaleza."
+];
+
+let currentQuestionIndex = 0;
+
+const gridSize = 12;
+const gridEl = document.getElementById('grid');
+const wordlistEl = document.getElementById('wordlist');
+const questionEl = document.getElementById('question');
+
+words.forEach(w => {
+  const span = document.createElement('span');
+  span.textContent = w;
+  span.id = 'word-' + w;
+  wordlistEl.appendChild(span);
+});
+
+questionEl.textContent = questions[currentQuestionIndex];
+
+let grid = Array.from({length:gridSize},()=>Array(gridSize).fill(''));
+
+function placeWord(word){
+  const directions = [ [1,0],[0,1],[1,1],[-1,1] ];
+  let placed=false;
+  for(let attempt=0; attempt<100 && !placed; attempt++){
+    const dir = directions[Math.floor(Math.random()*directions.length)];
+    let row = Math.floor(Math.random()*gridSize);
+    let col = Math.floor(Math.random()*gridSize);
+    if(row+dir[0]*(word.length-1)>=gridSize || row+dir[0]*(word.length-1)<0) continue;
+    if(col+dir[1]*(word.length-1)>=gridSize || col+dir[1]*(word.length-1)<0) continue;
+    let fits=true;
+    for(let i=0;i<word.length;i++){
+      let r=row+dir[0]*i, c=col+dir[1]*i;
+      if(grid[r][c]!=='' && grid[r][c]!==word[i]){fits=false;break;}
+    }
+    if(!fits) continue;
+    for(let i=0;i<word.length;i++){
+      let r=row+dir[0]*i, c=col+dir[1]*i;
+      grid[r][c]=word[i];
+    }
+    placed=true;
+  }
+}
+
+words.forEach(w=>placeWord(w));
+
+const alphabet = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+for(let r=0;r<gridSize;r++){
+  for(let c=0;c<gridSize;c++){
+    if(grid[r][c]===''){
+      grid[r][c]=alphabet[Math.floor(Math.random()*alphabet.length)];
+    }
+  }
+}
+
+let selected=[];
+for(let r=0;r<gridSize;r++){
+  for(let c=0;c<gridSize;c++){
+    const div=document.createElement('div');
+    div.className='cell';
+    div.textContent=grid[r][c];
+    div.dataset.row=r;
+    div.dataset.col=c;
+    gridEl.appendChild(div);
+  }
+}
+
+let isMouseDown=false;
+
+gridEl.addEventListener('mousedown',e=>{
+  if(e.target.classList.contains('cell')){
+    isMouseDown=true;
+    clearSelection();
+    selectCell(e.target);
+  }
+});
+gridEl.addEventListener('mouseover',e=>{
+  if(isMouseDown && e.target.classList.contains('cell')){
+    selectCell(e.target);
+  }
+});
+window.addEventListener('mouseup',()=>{
+  if(isMouseDown){
+    isMouseDown=false;
+    checkSelection();
+  }
+});
+
+function selectCell(cell){
+  if(!cell.classList.contains('selected')){
+    cell.classList.add('selected');
+    selected.push(cell);
+  }
+}
+
+function clearSelection(){
+  selected.forEach(c=>c.classList.remove('selected'));
+  selected=[];
+}
+
+function checkSelection(){
+  const letters=selected.map(c=>c.textContent).join('');
+  const reverse=letters.split('').reverse().join('');
+  const correctWord = words[currentQuestionIndex];
+  if(letters === correctWord || reverse === correctWord){
+    selected.forEach(c=>{
+      c.classList.remove('selected');
+      c.classList.add('found');
+    });
+    document.getElementById('word-'+correctWord)?.style.setProperty('text-decoration','line-through');
+    nextQuestion();
+  } else {
+    clearSelection();
+  }
+}
+
+function nextQuestion(){
+  currentQuestionIndex++;
+  if(currentQuestionIndex < questions.length){
+    questionEl.textContent = questions[currentQuestionIndex];
+  } else {
+    questionEl.textContent = "";
+    document.getElementById('message').textContent = "🎉 ¡Excelente, mi lector brillante! Has completado toda la sopa literaria. 📖✨";
+  }
+}
+</script>
+</body>
+</html>

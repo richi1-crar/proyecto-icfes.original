@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Neon Orb — Juego</title>
+<style>
+  :root{
+    --bg:#05060a;
+    --neon1:#7df9ff;
+    --neon2:#ff6ec7;
+    --neon3:#9bff7f;
+    --wall:#081428;
+    --panel:rgba(255,255,255,0.03);
+    --glass:rgba(255,255,255,0.03);
+  }
+  html,body{height:100%;margin:0;background:radial-gradient(ellipse at center, #071227 0%, var(--bg) 60%);font-family:Inter,system-ui,Arial;}
+  .wrap{display:flex;gap:20px;align-items:flex-start;justify-content:center;padding:20px;}
+  canvas{background:linear-gradient(180deg,#03060b, #071227);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 40px rgba(125,249,255,0.03) inset;}
+  .ui{width:320px;color:#dcecff}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:14px;backdrop-filter: blur(6px);box-shadow:0 6px 24px rgba(0,0,0,0.6);}
+  h1{margin:0;font-size:20px;color:var(--neon2);text-shadow:0 2px 12px rgba(255,110,199,0.08);}
+  p.small{margin:8px 0;color:#b9d6ffcc;font-size:13px}
+  .row{display:flex;gap:8px;align-items:center;margin-top:10px;}
+  .btn{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#eaf8ff}
+  .stat{display:flex;justify-content:space-between;font-size:14px;margin-top:6px;color:#bcdfff}
+  .hint{font-size:13px;color:#9fbfff;margin-top:8px}
+  footer{margin-top:12px;color:#89b8ff66;font-size:12px}
+  .big{font-size:22px;color:var(--neon1);font-weight:700;text-shadow:0 6px 30px rgba(125,249,255,0.06)}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}
+  .power {display:flex;gap:8px;align-items:center;margin-top:8px}
+  .pill {width:14px;height:14px;border-radius:50%}
+  .neon-glow{filter:drop-shadow(0 0 10px rgba(125,249,255,0.12));}
+  .footer-note{font-size:12px;color:#89b8ff77;margin-top:6px}
+  @media (max-width:900px){.wrap{flex-direction:column;align-items:center}.ui{width:90%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <canvas id="game" width="720" height="720"></canvas>
+  <div class="ui">
+    <div class="card">
+      <h1>Neon Orb — La Esfera con Capa</h1>
+      <p class="small">Protagonista: <strong>Orb</strong> — veloz, curioso y un poquito presumido. Juega con flechas o WASD. Pulsa <kbd>Space</kbd> para activar turbo (gasta energía).</p>
+
+      <div class="stat"><div>Puntos</div><div id="score" class="big">0</div></div>
+      <div class="stat"><div>Vidas</div><div id="lives">3</div></div>
+      <div class="stat"><div>Poder</div><div id="power">—</div></div>
+
+      <div class="power">
+        <div style="width:12px;height:12px;border-radius:4px;background:var(--neon1)"></div>
+        <div style="font-size:13px;color:#cfefff">Pellets (10 pts)</div>
+      </div>
+      <div class="power">
+        <div style="width:12px;height:12px;border-radius:4px;background:var(--neon2)"></div>
+        <div style="font-size:13px;color:#ffcfe6">Power-ups: <strong>Invisibilidad</strong> (evita a los fantasmas)</div>
+      </div>
+      <div class="power">
+        <div style="width:12px;height:12px;border-radius:4px;background:var(--neon3)"></div>
+        <div style="font-size:13px;color:#eaffcc">Turbo: velocidad extra (consume barra)</div>
+      </div>
+
+      <div class="hint">Mejoras especiales aparecen como frutas neon — ¡cógelas para bonificaciones!</div>
+
+      <div class="row">
+        <button class="btn" id="restart">Reiniciar</button>
+        <button class="btn" id="mute">Silenciar</button>
+      </div>
+
+      <div class="footer-note">Diseño: laberinto dinámico, IA simple, estética neón. Hecho con cariño y un poco de electricidad poética ⚡</div>
+      <footer>Controles: Flechas / WASD — <strong>Space</strong>=turbo — <strong>P</strong>=pausa</footer>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  Neon Orb — Juego estilo Pac-like pero propio.
+  Autor: ChatGPT (generado)
+  Instrucciones: Guardar como index.html y abrir en navegador.
+*/
+
+// Canvas y contexto
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const TILE = 24; // tamaño del tile
+const ROWS = 27;
+const COLS = 27;
+const W = COLS * TILE;
+const H = ROWS * TILE;
+canvas.width = W;
+canvas.height = H;
+
+// UI elementos
+const scoreEl = document.getElementById('score');
+const livesEl = document.getElementById('lives');
+const powerEl = document.getElementById('power');
+const restartBtn = document.getElementById('restart');
+const muteBtn = document.getElementById('mute');
+
+let mute = false;
+muteBtn.onclick = ()=>{mute=!mute; muteBtn.textContent = mute? 'Sonido Off':'Silenciar'; if(!mute) playMusic();};
+
+// Sonidos básicos con WebAudio
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioCtx();
+let musicOsc;
+
+function beep(freq, time=0.08, type='sine', vol=0.08){
+  if(mute) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.value = vol;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + time);
+  o.stop(audioCtx.currentTime + time + 0.02);
+}
+
+function playMusic(){
+  if(mute) return;
+  if(musicOsc) musicOsc.stop();
+  musicOsc = audioCtx.createOscillator();
+  musicOsc.type='sine';
+  musicOsc.frequency.value = 110;
+  const g = audioCtx.createGain(); g.gain.value = 0.002;
+  musicOsc.connect(g); g.connect(audioCtx.destination);
+  musicOsc.start();
+}
+
+// Mapa: 0 = empty/path, 1 = wall, 2 = pellet, 3 = powerup, 4 = fruit spawn
+// Simple generador de laberinto estilo "manual" para la estética
+let map = [];
+
+function genMap(){
+  const base = [
+    "111111111111111111111111111",
+    "100000000011000000000000001",
+    "101111111011011111111110101",
+    "103000000000000000000030101",
+    "101011111111111111101110101",
+    "101010000000000001001010101",
+    "101010111111110101101010101",
+    "100010100000010100100010001",
+    "111010101110010101101010111",
+    "001010101000000101001010100",
+    "101010101011110101101010101",
+    "101000001000000001000001001",
+    "101111101011111101011111101",
+    "100000001000000001000000001",
+    "101111101011111101011111101",
+    "101000001000000001000001001",
+    "101010101011110101101010101",
+    "001010101000000101001010100",
+    "111010101110010101101010111",
+    "100010100000010100100010001",
+    "101010111111110101101010101",
+    "101010000000000001001010101",
+    "101011111111111111101110101",
+    "103000000000000000000030101",
+    "101111111011011111111110101",
+    "100000000011000000000000001",
+    "111111111111111111111111111"
+  ];
+  // stretch to ROWS if needed
+  map = [];
+  for(let r=0;r<ROWS;r++){
+    const row = base[r % base.length];
+    const arr = [];
+    for(let c=0;c<COLS;c++){
+      let ch = row[c] || '1';
+      if(ch === '1') arr.push(1);
+      else if(ch === '3') arr.push(3);
+      else arr.push(2); // pellet by default
+    }
+    map.push(arr);
+  }
+  // open center box for ghost spawn
+  const cx = Math.floor(ROWS/2);
+  const cy = Math.floor(COLS/2);
+  for(let r=cx-2;r<=cx+2;r++) for(let c=cy-3;c<=cy+3;c++) map[r][c]=0;
+  // fruit spawns
+  map[3][3]=4; map[3][COLS-4]=4; map[ROWS-4][3]=4; map[ROWS-4][COLS-4]=4;
+}
+genMap();
+
+// Entidades
+class Orb {
+  constructor(){
+    this.x = TILE*1.5; this.y = TILE*1.5;
+    this.r = TILE*0.45;
+    this.dir = {x:0,y:0}; this.speed = 1.6;
+    this.nextDir = {x:0,y:0};
+    this.score = 0;
+    this.lives = 3;
+    this.turbo = 100; // energy
+    this.invisible = 0; // frames left
+  }
+  posToCell(x,y){ return {r: Math.floor(y/TILE), c: Math.floor(x/TILE)}; }
+  update(){
+    // turbo usage
+    let sp = this.speed;
+    if(keys[' '] && this.turbo>0){ sp *= 1.8; this.turbo -= 0.9; if(frame%6===0) beep(880,0.02,'square',0.02); }
+    else if(this.turbo < 100) this.turbo += 0.12;
+
+    if(this.invisible>0) this.invisible -= 1;
+    // apply nextDir if possible when aligned
+    if(this.nextDir.x !== 0 || this.nextDir.y !==0){
+      const nx = this.x + this.nextDir.x * sp;
+      const ny = this.y + this.nextDir.y * sp;
+      if(!collidesWithWall(nx, ny, this.r)){
+        this.dir = {...this.nextDir};
+        this.nextDir = {x:0,y:0};
+      }
+    }
+    // move
+    const tx = this.x + this.dir.x * sp;
+    const ty = this.y + this.dir.y * sp;
+    if(!collidesWithWall(tx, ty, this.r)){
+      this.x = tx; this.y = ty;
+    } else {
+      // stop if collision
+      this.dir = {x:0,y:0};
+    }
+    // wrap edges
+    if(this.x < -TILE) this.x = W + TILE;
+    if(this.x > W + TILE) this.x = -TILE;
+  }
+  draw(){
+    // glow
+    ctx.save();
+    ctx.beginPath();
+    const glow = ctx.createRadialGradient(this.x,this.y,this.r*0.2,this.x,this.y,this.r*3);
+    glow.addColorStop(0, 'rgba(157,255,127,0.18)');
+    glow.addColorStop(1,'rgba(157,255,127,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(this.x - this.r*3, this.y - this.r*3, this.r*6, this.r*6);
+    ctx.restore();
+
+    // body
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(157,255,127,1)';
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fill();
+    // eyes
+    ctx.fillStyle = '#04182b';
+    ctx.beginPath(); ctx.ellipse(this.x+this.r*0.25,this.y-this.r*0.1,this.r*0.25,this.r*0.18,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#eaf8ff';
+    ctx.beginPath(); ctx.ellipse(this.x+this.r*0.28,this.y-this.r*0.12,this.r*0.08,this.r*0.06,0,0,Math.PI*2); ctx.fill();
+
+    // cape
+    ctx.fillStyle = 'rgba(255,110,199,0.12)';
+    ctx.beginPath();
+    ctx.ellipse(this.x-this.r*0.7,this.y,this.r*0.9,this.r*0.6,Math.PI/6,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // if invisible power show sparkles
+    if(this.invisible>0){
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.strokeStyle = 'rgba(255,110,199,0.6)';
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.r*1.5,0,Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+class Ghost {
+  constructor(x,y,color='red'){
+    this.x = x; this.y = y; this.r = TILE*0.48;
+    this.color = color; this.speed = 1.1;
+    this.dir = {x:0,y:0};
+    this.mode = 'scatter'; // scatter, chase, frightened
+    this.fright = 0;
+  }
+  update(target){
+    // mode changes handled globally
+    let sp = this.speed;
+    if(this.fright>0){ sp *= 0.85; this.fright--; }
+    // simple chase: move towards target with occasional randomness
+    if(Math.random()<0.02) {
+      // random turn
+      const options = dirs.filter(d => !collidesWithWall(this.x + d.x*sp, this.y + d.y*sp, this.r));
+      if(options.length) this.dir = options[Math.floor(Math.random()*options.length)];
+    }
+    // bias towards target
+    const dx = target.x - this.x;
+    const dy = target.y - this.y;
+    const nx = dx === 0 ? 0 : dx/Math.abs(dx);
+    const ny = dy === 0 ? 0 : dy/Math.abs(dy);
+    // choose axis prioritized by distance
+    let prefer = Math.abs(dx) > Math.abs(dy) ? {x:nx,y:0} : {x:0,y:ny};
+    // try to set dir to prefer, else other
+    const attempt = [prefer, {x:-prefer.x,y:-prefer.y}, {x:0,y:ny}, {x:nx,y:0}];
+    for(let a of attempt){
+      if(a.x===0 && a.y===0) continue;
+      if(!collidesWithWall(this.x + a.x*sp, this.y + a.y*sp, this.r)){ this.dir = a; break;}
+    }
+    // move
+    if(!collidesWithWall(this.x + this.dir.x*sp, this.y + this.dir.y*sp, this.r)){
+      this.x += this.dir.x*sp; this.y += this.dir.y*sp;
+    } else {
+      // try random
+      const options = dirs.filter(d => !collidesWithWall(this.x + d.x*sp, this.y + d.y*sp, this.r));
+      if(options.length) this.dir = options[Math.floor(Math.random()*options.length)];
+    }
+    // wrap
+    if(this.x < -TILE) this.x = W + TILE;
+    if(this.x > W + TILE) this.x = -TILE;
+  }
+  draw(){
+    ctx.save();
+    // glow
+    const g = ctx.createRadialGradient(this.x,this.y,this.r*0.3,this.x,this.y,this.r*3);
+    g.addColorStop(0,this.color); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(this.x-this.r*3,this.y-this.r*3,this.r*6,this.r*6);
+    // body
+    ctx.beginPath(); ctx.fillStyle=this.color; ctx.arc(this.x,this.y-this.r*0.12,this.r,Math.PI,2*Math.PI); ctx.fill();
+    ctx.fillRect(this.x-this.r,this.y-this.r*0.12,this.r*2,this.r);
+    // bottom scallops
+    ctx.beginPath(); for(let i=-1;i<=1;i++){ ctx.arc(this.x + i*this.r*0.6, this.y + this.r*0.9, this.r*0.25, 0, Math.PI); } ctx.fill();
+    // eyes
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(this.x-this.r*0.25,this.y-this.r*0.1,this.r*0.26,this.r*0.22,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(this.x+this.r*0.25,this.y-this.r*0.1,this.r*0.26,this.r*0.22,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#04182b';
+    ctx.beginPath(); ctx.ellipse(this.x-this.r*0.1,this.y-this.r*0.12,this.r*0.09,this.r*0.09,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(this.x+this.r*0.4,this.y-this.r*0.12,this.r*0.09,this.r*0.09,0,0,Math.PI*2); ctx.fill();
+    // frightened overlay
+    if(this.fright>0){
+      ctx.fillStyle = 'rgba(200,220,255,0.2)';
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.r*1.1,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+const dirs = [
+  {x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}
+];
+
+// helper: detect wall collision for circle
+function collidesWithWall(x,y,r){
+  // check four sample points around circle
+  const samples = [
+    {x:x + r*0.9, y},
+    {x:x - r*0.9, y},
+    {x, y: y + r*0.9},
+    {x, y: y - r*0.9}
+  ];
+  for(let s of samples){
+    const rr = Math.floor(s.y / TILE), cc = Math.floor(s.x / TILE);
+    if(rr<0||rr>=ROWS||cc<0||cc>=COLS) continue;
+    if(map[rr][cc] === 1) return true;
+  }
+  return false;
+}
+
+// Game state
+let player, ghosts = [], pelletsCount = 0, frame = 0, paused=false;
+let fruit = null; // {x,y,type,ttl}
+let level = 1;
+
+function resetEntities(){
+  player = new Orb();
+  // place player at top-left open area
+  player.x = TILE*1.5; player.y = TILE*1.5;
+  // ghosts in center
+  ghosts = [];
+  const cx = Math.floor(COLS/2);
+  const cy = Math.floor(ROWS/2);
+  const colors = ['rgba(255,110,199,1)','rgba(255,200,80,1)','rgba(130,255,255,1)','rgba(180,120,255,1)'];
+  for(let i=0;i<4;i++){
+    const g = new Ghost(cx*TILE + (i-1.5)*TILE, cy*TILE + TILE, colors[i]);
+    ghosts.push(g);
+  }
+  pelletsCount = countPellets();
+  fruit = null;
+}
+function countPellets(){
+  let c=0;
+  for(let r=0;r<ROWS;r++) for(let col=0;col<COLS;col++){
+    if(map[r][col]===2) c++;
+  }
+  return c;
+}
+
+function spawnFruit(){
+  // spawn at random fruit tile
+  const spots = [];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(map[r][c]===4) spots.push({r,c});
+  if(spots.length===0) return;
+  const s = spots[Math.floor(Math.random()*spots.length)];
+  fruit = {x: (s.c+0.5)*TILE, y:(s.r+0.5)*TILE, type:'cherry', ttl: 360};
+}
+
+function startGame(){
+  genMap();
+  resetEntities();
+  frame=0;
+  playMusic();
+  loop();
+}
+
+restartBtn.onclick = ()=>{ startGame(); };
+
+// Input
+const keys = {};
+window.addEventListener('keydown', (e)=>{
+  keys[e.key.toLowerCase()] = true;
+  if(e.key === 'ArrowUp') { player.nextDir = {x:0,y:-1}; e.preventDefault(); }
+  if(e.key === 'ArrowDown') { player.nextDir = {x:0,y:1}; e.preventDefault(); }
+  if(e.key === 'ArrowLeft') { player.nextDir = {x:-1,y:0}; e.preventDefault(); }
+  if(e.key === 'ArrowRight') { player.nextDir = {x:1,y:0}; e.preventDefault(); }
+  if(e.key.toLowerCase() === 'w') player.nextDir = {x:0,y:-1};
+  if(e.key.toLowerCase() === 's') player.nextDir = {x:0,y:1};
+  if(e.key.toLowerCase() === 'a') player.nextDir = {x:-1,y:0};
+  if(e.key.toLowerCase() === 'd') player.nextDir = {x:1,y:0};
+  if(e.key.toLowerCase() === 'p') paused = !paused;
+});
+window.addEventListener('keyup', (e)=>{ keys[e.key.toLowerCase()] = false; });
+
+// Main loop
+let last = 0;
+function loop(ts){
+  if(!last) last = ts;
+  const dt = ts - last; last = ts;
+  if(!paused){
+    update();
+    draw();
+  } else {
+    // paused overlay
+    draw();
+    ctx.save();
+    ctx.fillStyle = 'rgba(2,6,12,0.6)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#bfefff';
+    ctx.font = '36px Inter';
+    ctx.fillText('Pausa', W/2-60, H/2);
+    ctx.restore();
+  }
+  requestAnimationFrame(loop);
+}
+
+function update(){
+  frame++;
+  player.update();
+  // pellet collection
+  const cr = Math.floor(player.y / TILE), cc = Math.floor(player.x / TILE);
+  if(map[cr] && map[cr][cc] && (map[cr][cc]===2 || map[cr][cc]===3)){
+    if(map[cr][cc]===2){ player.score += 10; beep(1200,0.03,'sine',0.03); pelletsCount--; map[cr][cc]=0; }
+    if(map[cr][cc]===3){ player.score += 50; player.invisible = 600; beep(1800,0.08,'triangle',0.06); map[cr][cc]=0; ghosts.forEach(g=>g.fright=600); }
+    // spawn fruit occasionally
+    if(Math.random() < 0.007 && !fruit){ spawnFruit(); }
+  }
+  // fruit collection
+  if(fruit){
+    const dx = player.x - fruit.x, dy = player.y - fruit.y;
+    if(Math.hypot(dx,dy) < player.r + TILE*0.2){
+      player.score += 200; fruit = null; beep(2200,0.12,'sine',0.08);
+    } else {
+      fruit.ttl--; if(fruit.ttl<=0) fruit=null;
+    }
+  }
+
+  // ghosts update: target depends on mode
+  let target = player;
+  ghosts.forEach((g, idx)=>{
+    // if frightened and player invisible, ghosts don't chase
+    if(player.invisible>0) g.fright = Math.max(g.fright, 200);
+    // choose target: if frightened wander randomly
+    if(g.fright > 0) {
+      // random target position
+      const rx = Math.random()*W, ry = Math.random()*H;
+      g.update({x:rx,y:ry});
+    } else {
+      // chase player
+      g.update(player);
+    }
+    // collision with player
+    const d = Math.hypot(g.x - player.x, g.y - player.y);
+    if(d < g.r + player.r - 2){
+      if(player.invisible>0 || g.fright>0){
+        // eat ghost -> teleport ghost back
+        player.score += 150; beep(600,0.06,'square',0.06);
+        g.x = Math.floor(COLS/2)*TILE;
+        g.y = Math.floor(ROWS/2)*TILE + TILE;
+        g.fright = 0;
+      } else {
+        // player dies
+        player.lives -= 1;
+        beep(120,0.18,'sawtooth',0.08);
+        if(player.lives <= 0){
+          // game over
+          paused = true;
+          setTimeout(()=>{ alert('Game Over — Tu puntuación: ' + player.score); startGame(); }, 80);
+        } else {
+          // reset positions briefly
+          resetEntities();
+        }
+      }
+    }
+  });
+
+  // win condition
+  if(pelletsCount <= 0){
+    paused = true;
+    setTimeout(()=>{ alert('¡Victoria! Nivel completado — Puntos: ' + player.score); level++; genMap(); resetEntities(); paused=false; }, 120);
+  }
+
+  // UI updates
+  scoreEl.textContent = Math.floor(player.score);
+  livesEl.textContent = player.lives;
+  powerEl.textContent = player.invisible>0 ? 'Invisible' : (keys[' '] ? 'Turbo' : '—');
+
+  // small periodic beeps to set rhythm
+  if(frame % 240 === 0){ beep(300 + Math.random()*400,0.04,'sine',0.015); }
+}
+
+// Draw functions
+function draw(){
+  // clear
+  ctx.clearRect(0,0,W,H);
+  // draw tiles
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const val = map[r][c];
+    const x = c*TILE, y = r*TILE;
+    if(val === 1){
+      // wall neon
+      ctx.save();
+      ctx.fillStyle = '#051428';
+      ctx.fillRect(x+2,y+2,TILE-4,TILE-4);
+      // glow outline
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(125,249,255,0.06)';
+      ctx.strokeRect(x+2.5,y+2.5,TILE-5,TILE-5);
+      ctx.restore();
+    } else {
+      // floor slight grid
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.01)';
+      ctx.fillRect(x,y,TILE,TILE);
+      ctx.restore();
+    }
+    // pellets
+    if(val === 2){
+      ctx.beginPath(); ctx.fillStyle = 'rgba(180,230,255,0.9)'; ctx.arc(x + TILE/2, y + TILE/2, TILE*0.12, 0, Math.PI*2); ctx.fill();
+    } else if(val === 3){
+      ctx.beginPath(); ctx.fillStyle = 'rgba(255,110,199,0.95)'; ctx.arc(x + TILE/2, y + TILE/2, TILE*0.18, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.arc(x + TILE/2, y + TILE/2, TILE*0.23, 0, Math.PI*2); ctx.stroke();
+    } else if(val === 4){
+      // small marker for fruit spawn
+      ctx.beginPath(); ctx.fillStyle = 'rgba(255,255,255,0.02)'; ctx.fillRect(x+TILE*0.42,y+TILE*0.42,TILE*0.16,TILE*0.16);
+    }
+  }
+
+  // draw fruit if present
+  if(fruit){
+    // neon cherry
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(255,110,199,1)';
+    ctx.arc(fruit.x - TILE*0.12, fruit.y, TILE*0.18, 0, Math.PI*2);
+    ctx.arc(fruit.x + TILE*0.12, fruit.y, TILE*0.18, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath(); ctx.moveTo(fruit.x - TILE*0.06, fruit.y - TILE*0.12); ctx.lineTo(fruit.x - TILE*0.02, fruit.y - TILE*0.36); ctx.lineTo(fruit.x + TILE*0.06, fruit.y - TILE*0.22); ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.restore();
+  }
+
+  // draw player & ghosts
+  ghosts.forEach(g => g.draw());
+  player.draw();
+
+  // top-left HUD small
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.02)';
+  ctx.fillRect(10,10,220,48);
+  ctx.restore();
+}
+
+// initial power-ups: convert some pellets to powerups
+function sprinklePowerups(){
+  let placed = 0;
+  for(let r=0;r<ROWS && placed<6;r++) for(let c=0;c<COLS && placed<6;c++){
+    if(map[r][c]===2 && Math.random() < 0.02){
+      map[r][c]=3; placed++;
+    }
+  }
+}
+sprinklePowerups();
+startGame();
+
+// small poetic HUD tip (console)
+console.log("Orb: 'Flotando entre neones, devoro la noche y hago brillar tu puntuación.' — ¡A jugar!");
+</script>
+</body>
+</html>

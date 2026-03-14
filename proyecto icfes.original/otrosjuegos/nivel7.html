@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UNO — Parodia Prototipo</title>
+<style>
+     .btn-volver {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 4px;
+  background: white;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-volver img {
+  width: 24px;
+  height: 24px;
+}
+  :root{
+    --bg:#0b1220;
+    --table:#d93b3b;
+    --card-width:74px;
+    --card-height:110px;
+    --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  *{box-sizing:border-box;font-family:var(--font-sans);}
+  body{
+    margin:0;
+    height:100vh;
+    background: radial-gradient( circle at 10% 10%, rgba(255,255,255,0.03), transparent 10%),
+                linear-gradient(180deg,#071021,#0b1220 40%);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  .arena{
+    width:92vw;
+    max-width:1200px;
+    aspect-ratio:16/9;
+    position:relative;
+    border-radius:16px;
+    background:linear-gradient(160deg, rgba(255,255,255,0.02), transparent),
+               radial-gradient(circle at center, rgba(255,255,255,0.02), transparent 20%);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7), inset 0 2px 40px rgba(255,255,255,0.02);
+    padding:18px;
+  }
+
+  /* mesa circular */
+  .table{
+    position:absolute;
+    inset:60px;
+    border-radius:50%;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.02), transparent 10%),
+                conic-gradient(from 120deg, #2b2b2b, #201a1a 45deg, #2b2b2b 90deg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    filter: drop-shadow(0 12px 20px rgba(0,0,0,0.6));
+  }
+
+  .table::before{
+    content:"";
+    position:absolute;
+    inset:22%;
+    border-radius:50%;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.02), transparent 10%), rgba(0,0,0,0.12);
+    backdrop-filter: blur(6px);
+  }
+
+  /* center pile */
+  .center{
+    position:relative;
+    width:260px;
+    height:200px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+  }
+  .pile, .discard{
+    width:84px;
+    height:120px;
+    border-radius:10px;
+    background:linear-gradient(180deg,#2b2b2b,#1a1a1a);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transform:rotate(-8deg);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.6);
+  }
+  .discard{transform:rotate(8deg)}
+  .pile .count{
+    font-size:14px;color:#ddd;
+  }
+
+  /* players around */
+  .player{
+    position:absolute;
+    width:220px;
+    height:140px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    flex-direction:column;
+    text-align:center;
+  }
+  .player .avatar{
+    width:54px;height:54px;border-radius:50%;
+    background:linear-gradient(135deg,#fff1,#0005);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,0.6);
+    border:2px solid rgba(255,255,255,0.06);
+  }
+  .player .name{font-size:13px;opacity:0.9}
+  .player .cards-row{
+    display:flex;gap:8px;align-items:center;height:70px;
+  }
+
+  .player.bottom{left:50%;transform:translateX(-50%);bottom:6px;}
+  .player.top{left:50%;transform:translateX(-50%);top:6px;}
+  .player.left{left:6px;top:50%;transform:translateY(-50%);}
+  .player.right{right:6px;top:50%;transform:translateY(-50%);}
+
+  /* card UI */
+  .card{
+    width:var(--card-width);
+    height:var(--card-height);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    font-size:24px;
+    color:#fff;
+    box-shadow:0 6px 16px rgba(0,0,0,0.6);
+    transform-origin:center center;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+    cursor:pointer;
+    user-select:none;
+  }
+  .card.small{width:54px;height:82px;font-size:16px;border-radius:8px}
+  .card:hover{transform:translateY(-6px) rotate(-2deg);box-shadow:0 12px 22px rgba(0,0,0,0.7);}
+
+  /* colors */
+  .red{background: linear-gradient(180deg,#ff6b6b,#d93b3b)}
+  .green{background: linear-gradient(180deg,#5ed39a,#0f9b50)}
+  .blue{background: linear-gradient(180deg,#4ea8ff,#1e6ed8)}
+  .yellow{background: linear-gradient(180deg,#ffd76b,#e1a02d)}
+  .wild{background: linear-gradient(180deg,#222,#444);font-size:18px}
+
+  /* bottom area (your hand) */
+  .hand-area{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:18px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;width:90%;
+  }
+  .hand{
+    display:flex;gap:10px;align-items:end;max-width:100%;overflow:hidden;padding:6px;
+  }
+  .controls{
+    display:flex;gap:8px;align-items:center;
+    margin-top:6px;
+  }
+  .btn{
+    background:rgba(255,255,255,0.06);padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);
+    cursor:pointer;color:#fff;font-weight:700;
+  }
+  .btn.small{padding:6px 8px;font-size:13px}
+
+  /* toast */
+  .toast{
+    position:absolute;left:50%;transform:translateX(-50%);top:8px;background:rgba(0,0,0,0.45);
+    color:#fff;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);font-weight:700;
+  }
+
+  /* color picker modal */
+  .color-picker{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    background:rgba(10,10,10,0.9);padding:12px;border-radius:12px;display:none;
+    gap:8px;box-shadow:0 8px 24px rgba(0,0,0,0.6);
+  }
+  .color-btn{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer}
+  .color-row{display:flex;gap:8px}
+
+  /* turn indicator */
+  .turn-indicator{position:absolute;right:12px;top:12px;background:rgba(0,0,0,0.4);padding:10px;border-radius:10px;font-weight:800;border:1px solid rgba(255,255,255,0.04)}
+
+  /* responsive small */
+  @media (max-width:700px){
+    .player{width:160px;height:120px}
+    .center{width:220px;height:160px}
+    .pile, .discard{width:64px;height:96px}
+    :root{--card-width:58px;--card-height:86px}
+  }
+</style>
+</head>
+<body>
+     <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+      <img src="inicios.png" alt="Volver">
+    </button>
+  
+<div class="arena">
+  <div class="toast" id="toast">Bienvenido a UNO — Juega rápido y con estilo.</div>
+
+  <div class="table" id="table">
+    <div class="center">
+      <div class="pile" id="pile" title="Mazo">
+        <div class="count" id="pileCount">--</div>
+      </div>
+      <div class="discard" id="discard" title="Descarte"></div>
+    </div>
+  </div>
+
+  <!-- players -->
+  <div class="player top" id="player-1">
+    <div class="avatar">A</div>
+    <div class="name" id="name-1">Ari</div>
+    <div class="cards-row" id="row-1"></div>
+  </div>
+
+  <div class="player left" id="player-2">
+    <div class="avatar">B</div>
+    <div class="name" id="name-2">Fuzzy</div>
+    <div class="cards-row" id="row-2"></div>
+  </div>
+
+  <div class="player right" id="player-3">
+    <div class="avatar">C</div>
+    <div class="name" id="name-3">Clem</div>
+    <div class="cards-row" id="row-3"></div>
+  </div>
+
+  <div class="player bottom" id="player-0">
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div class="avatar">Tú</div>
+      <div style="text-align:left">
+        <div class="name" id="name-0">Tom</div>
+        <div style="font-size:12px;opacity:0.8">Jugador humano</div>
+      </div>
+    </div>
+    <div class="cards-row" id="row-0"></div>
+  </div>
+
+  <!-- your hand (for responsive overlap) -->
+  <div class="hand-area" id="handArea">
+    <div class="hand" id="hand"></div>
+    <div class="controls">
+      <button class="btn" id="drawBtn">Robar</button>
+      <button class="btn" id="unoBtn">¡UNO!</button>
+      <div class="turn-indicator" id="turnBox">Turno: Tom</div>
+    </div>
+  </div>
+
+  <!-- color picker -->
+  <div class="color-picker" id="colorPicker">
+    <div style="font-weight:800;margin-bottom:6px">Elige color</div>
+    <div class="color-row">
+      <div class="color-btn red" data-color="red">🟥</div>
+      <div class="color-btn yellow" data-color="yellow">🟨</div>
+      <div class="color-btn green" data-color="green">🟩</div>
+      <div class="color-btn blue" data-color="blue">🟦</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  UNO Prototipo completo en un solo archivo.
+  Reglas implementadas: números, skip, reverse, draw2, wild, draw4.
+  Jugador humano: hace click en la carta para jugar o "Robar".
+  IA: elije la primera carta válida o roba.
+*/
+
+const players = [
+  {id:0,name:'Tom',hand:[],isHuman:true},
+  {id:1,name:'Ari',hand:[],isHuman:false},
+  {id:2,name:'Fuzzy',hand:[],isHuman:false},
+  {id:3,name:'Clem',hand:[],isHuman:false},
+];
+
+const colors = ['red','yellow','green','blue'];
+const actions = ['skip','reverse','draw2'];
+let deck = [];
+let discard = [];
+let currentPlayer = 0;
+let direction = 1; // 1 clockwise, -1 counter
+let pendingDraw = 0; // accumulation of +2/+4
+let gameLocked = false;
+const handElem = document.getElementById('hand');
+const turnBox = document.getElementById('turnBox');
+const pileCount = document.getElementById('pileCount');
+const discardElem = document.getElementById('discard');
+const pileElem = document.getElementById('pile');
+const toast = document.getElementById('toast');
+const colorPicker = document.getElementById('colorPicker');
+let resolveColorPick = null;
+
+// utility
+function randInt(n){ return Math.floor(Math.random()*n); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=randInt(i+1); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+// build deck
+function buildDeck(){
+  deck=[];
+  // numbers and actions
+  for(const c of colors){
+    // one zero
+    deck.push({type:'number',color:c,value:0});
+    // two of 1-9 and action per color
+    for(let i=1;i<=9;i++){ deck.push({type:'number',color:c,value:i}); deck.push({type:'number',color:c,value:i}); }
+    for(const a of actions){ deck.push({type:a,color:c}); deck.push({type:a,color:c}); }
+  }
+  // jokers
+  for(let i=0;i<4;i++){ deck.push({type:'wild'}); deck.push({type:'draw4'}); }
+  shuffle(deck);
+}
+
+// deal
+function deal(){
+  for(let r=0;r<7;r++){
+    for(const p of players) p.hand.push(deck.pop());
+  }
+}
+
+// draw safe
+function drawCard(){
+  if(deck.length===0){
+    // reshuffle discard except top
+    if(discard.length<=1) return null;
+    const top = discard.pop();
+    deck = shuffle(discard);
+    discard = [top];
+    showToast('Mazo agotado — se baraja el descarte.');
+  }
+  return deck.pop();
+}
+
+// start
+function startGame(){
+  buildDeck();
+  deal();
+  // flip first non-wild as starter
+  let starter = null;
+  while(deck.length){
+    const c = deck.pop();
+    if(c.type==='wild' || c.type==='draw4') {
+      // put at bottom of deck
+      deck.unshift(c);
+    } else { starter=c; break; }
+  }
+  if(!starter) starter = deck.pop();
+  discard = [starter];
+  renderAll();
+  // if starter is action, apply effect
+  applyCardEffect(starter, true);
+  showToast('Comienza la partida.');  
+}
+
+// rendering
+function renderAll(){
+  pileCount.textContent = deck.length;
+  renderDiscard();
+  for(const p of players) renderPlayerRow(p);
+  updateHandArea();
+  updateTurnBox();
+}
+
+function renderDiscard(){
+  const top = discard[discard.length-1];
+  discardElem.innerHTML = '';
+  if(!top) return;
+  const el = makeCardElement(top, false);
+  el.classList.add('small');
+  discardElem.appendChild(el);
+}
+
+function renderPlayerRow(player){
+  const row = document.getElementById('row-'+player.id);
+  row.innerHTML='';
+  // if human -> show cards
+  if(player.isHuman){
+    // leave to hand area
+  } else {
+    // show back-of-cards or small card count
+    for(let i=0;i<Math.min(player.hand.length,5);i++){
+      const back = document.createElement('div');
+      back.className='card small';
+      back.textContent='🂠';
+      row.appendChild(back);
+    }
+    if(player.hand.length>5){
+      const more = document.createElement('div');
+      more.style.fontSize='12px';
+      more.style.opacity='0.9';
+      more.textContent = `x${player.hand.length}`;
+      row.appendChild(more);
+    }
+  }
+}
+
+function updateHandArea(){
+  handElem.innerHTML='';
+  const human = players[0];
+  for(let i=0;i<human.hand.length;i++){
+    const card = human.hand[i];
+    const el = makeCardElement(card, true);
+    el.dataset.index = i;
+    handElem.appendChild(el);
+  }
+}
+
+// create card element
+function makeCardElement(card, clickable){
+  const el = document.createElement('div');
+  el.className = 'card';
+  if(card.type==='number'){ el.classList.add(card.color); el.textContent = card.value; }
+  else if(card.type==='skip'){ el.classList.add(card.color); el.textContent = '↯'; }
+  else if(card.type==='reverse'){ el.classList.add(card.color); el.textContent = '↺'; }
+  else if(card.type==='draw2'){ el.classList.add(card.color); el.textContent = '+2'; }
+  else if(card.type==='wild'){ el.classList.add('wild'); el.textContent = 'WILD'; }
+  else if(card.type==='draw4'){ el.classList.add('wild'); el.textContent = '+4'; }
+  // clickable behavior
+  if(clickable){
+    el.addEventListener('click', ()=> onHumanPlay(card, el));
+  }
+  return el;
+}
+
+// toast
+let toastTimer = null;
+function showToast(msg, t=2200){
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ toast.style.opacity = '0'; }, t);
+}
+
+// game logic: check valid play
+function isPlayable(card, top){
+  if(!top) return true;
+  if(card.type==='wild' || card.type==='draw4') return true;
+  if(card.color && top.color && card.color === top.color) return true;
+  if(card.type==='number' && top.type==='number' && card.value === top.value) return true;
+  if(card.type === top.type && (card.type==='skip' || card.type==='reverse' || card.type==='draw2')) return true;
+  // if top is wild with chosen color property: top.chosenColor
+  if(top.chosenColor && card.color && card.color===top.chosenColor) return true;
+  return false;
+}
+
+// apply effect (when played). 'initial' true when starting card
+function applyCardEffect(card, initial=false){
+  const top = discard[discard.length-1];
+  // reset chosenColor if not wild
+  if(card.type!=='wild' && card.type!=='draw4') {
+    if(card.color) card.chosenColor = null;
+  }
+  if(card.type==='reverse' && !initial){
+    direction *= -1;
+    showToast('Reversa — cambia la dirección.');
+    // if 2 players, reverse acts like skip: handled by incrementing turn later
+  }
+  if(card.type==='skip' && !initial){
+    showToast('¡Salta! Un jugador pierde turno.');
+    // skipping handled in advanceTurn by incrementing extra
+  }
+  if(card.type==='draw2' && !initial){
+    pendingDraw += 2;
+  }
+  if(card.type==='draw4' && !initial){
+    pendingDraw += 4;
+  }
+  if(initial){
+    // some starters like reverse or skip should still affect initial turn
+    if(card.type==='reverse') direction *= -1;
+    if(card.type==='skip') advanceTurn(); // skip next once
+    if(card.type==='draw2') pendingDraw += 2;
+  }
+}
+
+// advance turn
+function advanceTurn(extra=1){
+  currentPlayer = (currentPlayer + extra*direction + players.length) % players.length;
+  renderAll();
+}
+
+// human actions
+function onHumanPlay(card, el){
+  if(gameLocked) return;
+  if(currentPlayer!==0){ showToast("No es tu turno."); return; }
+  const top = discard[discard.length-1];
+  if(pendingDraw>0 && !(card.type==='draw2' || card.type==='draw4')){
+    showToast(`Debes robar ${pendingDraw} o jugar +2/+4.`);
+    return;
+  }
+  if(!isPlayable(card, top)){
+    showToast('Carta no válida ahora.');
+    return;
+  }
+  // if wild/draw4 need color choice
+  if(card.type==='wild' || card.type==='draw4'){
+    // open color picker
+    pickColor().then(chosen=>{
+      card.chosenColor = chosen;
+      playCardFromHand(0, card);
+    });
+  } else {
+    playCardFromHand(0, card);
+  }
+}
+
+// play card from player's hand (by object)
+function playCardFromHand(playerId, card){
+  const player = players[playerId];
+  // remove one matching (object equality)
+  const idx = player.hand.findIndex(c => c===card);
+  if(idx===-1) return;
+  player.hand.splice(idx,1);
+  discard.push(card);
+  applyCardEffect(card);
+  renderAll();
+  // check UNO
+  if(player.hand.length===1 && player.isHuman) showToast('¡Casi UNO! recuerda decir UNO.');
+  if(player.hand.length===0){
+    showToast(`${player.name} gana la ronda 🎉`);
+    gameLocked = true;
+    return;
+  }
+  // handle next moves depending on effect
+  // if card was draw2 or draw4: next player will draw when their turn begins (we keep pendingDraw)
+  // if card was skip: we'll advance an extra turn
+  let extra = 1;
+  if(card.type==='skip') extra = 2; // skip next
+  if(card.type==='reverse' && players.length===2) extra = 2; // reverse acts like skip in 2 players
+  // move to next
+  setTimeout(()=> {
+    advanceTurn(extra);
+    setTimeout(()=> aiMaybeAct(), 300);
+  }, 250);
+}
+
+// human draw
+document.getElementById('drawBtn').addEventListener('click', ()=>{
+  if(currentPlayer!==0){ showToast("No es tu turno."); return; }
+  if(gameLocked) return;
+  if(pendingDraw>0){
+    // forced to draw pending
+    for(let i=0;i<pendingDraw;i++){
+      const card = drawCard(); if(card) players[0].hand.push(card);
+    }
+    showToast(`Robaste ${pendingDraw} cartas.`);
+    pendingDraw = 0;
+    advanceTurn();
+    setTimeout(()=> aiMaybeAct(), 300);
+    renderAll();
+    return;
+  }
+  const card = drawCard();
+  if(!card){ showToast('No hay cartas para robar.'); return; }
+  players[0].hand.push(card);
+  showToast('Robaste 1 carta.');
+  renderAll();
+  // if playable and user wants immediate play, they must click it
+});
+
+// UNO button (flavor)
+document.getElementById('unoBtn').addEventListener('click', ()=>{
+  if(players[0].hand.length===1) showToast('¡UNO! bien jugado.');
+  else showToast('No es momento de UNO.');
+});
+
+// color pick wrapper
+function pickColor(){
+  colorPicker.style.display='flex';
+  return new Promise(res=>{
+    resolveColorPick = res;
+  });
+}
+document.querySelectorAll('.color-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const c = b.dataset.color;
+    colorPicker.style.display='none';
+    if(resolveColorPick) resolveColorPick(c);
+    resolveColorPick = null;
+  });
+});
+
+// AI logic
+function aiMaybeAct(){
+  if(gameLocked) return;
+  // if it's human, return
+  if(players[currentPlayer].isHuman) return;
+  setTimeout(()=> aiPlayTurn(currentPlayer), 700 + Math.random()*900);
+}
+
+function aiPlayTurn(id){
+  if(gameLocked) return;
+  const player = players[id];
+  const top = discard[discard.length-1];
+  // if pendingDraw -> try to play draw2/draw4 if possible, otherwise draw pending and skip
+  if(pendingDraw>0){
+    const chain = player.hand.find(c => (pendingDraw%2===0 && c.type==='draw2') || c.type==='draw4');
+    if(chain){
+      // play chain card
+      discard.push(chain);
+      player.hand.splice(player.hand.indexOf(chain),1);
+      applyCardEffect(chain);
+      showToast(`${player.name} encadena +${chain.type==='draw4'?4:2}`);
+      renderAll();
+      // advance (no extra skip)
+      advanceTurn();
+      setTimeout(()=> aiMaybeAct(), 300);
+      return;
+    } else {
+      // draw pendingDraw
+      for(let i=0;i<pendingDraw;i++){
+        const c = drawCard(); if(c) player.hand.push(c);
+      }
+      showToast(`${player.name} roba ${pendingDraw}.`);
+      pendingDraw = 0;
+      advanceTurn();
+      setTimeout(()=> aiMaybeAct(), 300);
+      renderAll();
+      return;
+    }
+  }
+
+  // normal: pick first playable
+  let play = null;
+  for(const c of player.hand){
+    if(isPlayable(c, top)){ play = c; break; }
+  }
+  if(play){
+    // if wild -> choose a color based on majority in hand
+    if(play.type==='wild' || play.type==='draw4'){
+      const counts = {red:0,yellow:0,green:0,blue:0};
+      for(const cc of player.hand) if(cc.color) counts[cc.color]++;
+      let chosen = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0] || 'red';
+      play.chosenColor = chosen;
+    }
+    // play it
+    player.hand.splice(player.hand.indexOf(play),1);
+    discard.push(play);
+    applyCardEffect(play);
+    showToast(`${player.name} juega ${cardToText(play)}.`);
+    renderAll();
+    // check win
+    if(player.hand.length===0){ showToast(`${player.name} gana la ronda 🎉`); gameLocked=true; return; }
+    let extra = 1;
+    if(play.type==='skip') extra = 2;
+    if(play.type==='reverse' && players.length===2) extra = 2;
+    setTimeout(()=> { advanceTurn(extra); setTimeout(()=> aiMaybeAct(), 300); }, 300);
+  } else {
+    // draw one
+    const c = drawCard();
+    if(!c){ showToast('Mazo vacío.'); advanceTurn(); setTimeout(()=> aiMaybeAct(), 300); return;}
+    player.hand.push(c);
+    showToast(`${player.name} roba.`);
+    renderAll();
+    // if playable immediately, play
+    if(isPlayable(c, top)){
+      setTimeout(()=> {
+        player.hand.splice(player.hand.indexOf(c),1);
+        // if wild choose
+        if(c.type==='wild' || c.type==='draw4'){
+          const counts = {red:0,yellow:0,green:0,blue:0};
+          for(const cc of player.hand) if(cc.color) counts[cc.color]++;
+          c.chosenColor = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0] || 'red';
+        }
+        discard.push(c); applyCardEffect(c);
+        showToast(`${player.name} juega ${cardToText(c)}.`);
+        renderAll();
+        if(player.hand.length===0){ showToast(`${player.name} gana la ronda 🎉`); gameLocked=true; return; }
+        let extra = 1;
+        if(c.type==='skip') extra = 2;
+        if(c.type==='reverse' && players.length===2) extra = 2;
+        setTimeout(()=> { advanceTurn(extra); setTimeout(()=> aiMaybeAct(), 300); }, 300);
+      }, 700);
+    } else {
+      setTimeout(()=> { advanceTurn(); setTimeout(()=> aiMaybeAct(), 300); }, 600);
+    }
+  }
+}
+
+function cardToText(c){
+  if(c.type==='number') return `${c.color} ${c.value}`;
+  if(c.type==='skip') return `${c.color} SKIP`;
+  if(c.type==='reverse') return `${c.color} REV`;
+  if(c.type==='draw2') return `${c.color} +2`;
+  if(c.type==='wild') return `WILD`;
+  if(c.type==='draw4') return `+4`;
+  return 'Carta';
+}
+
+// initial UI population
+function renderPlayerNames(){
+  players.forEach(p=>{
+    document.getElementById('name-'+p.id).textContent = p.name;
+    document.getElementById('player-'+p.id).querySelector('.avatar').textContent = p.isHuman ? 'Tú' : p.name.charAt(0);
+  });
+}
+renderPlayerNames();
+
+// update turn box
+function updateTurnBox(){
+  turnBox.textContent = `Turno: ${players[currentPlayer].name}`;
+}
+
+// start on load
+startGame();
+
+// click on pile to draw when not your turn? allow manual draw for human only if it's their turn and no pendingDraw
+pileElem.addEventListener('click', ()=>{
+  if(currentPlayer===0 && !gameLocked && pendingDraw===0){
+    const card = drawCard();
+    if(!card) { showToast('Nada que robar.'); return; }
+    players[0].hand.push(card);
+    showToast('Robaste 1 carta.');
+    renderAll();
+  } else {
+    showToast('Solo puedes robar en tu turno (o cuando te toque).');
+  }
+});
+
+// small polish: clicking discard shows top card details
+discardElem.addEventListener('click', ()=>{
+  const top = discard[discard.length-1];
+  if(!top) return;
+  let msg = cardToText(top);
+  if(top.chosenColor) msg += ` (color elegido: ${top.chosenColor})`;
+  showToast(`Descarte: ${msg}`, 1800);
+});
+
+// keyboard shortcut R to restart quickly
+document.addEventListener('keydown', (e)=> {
+  if(e.key.toLowerCase()==='r') location.reload();
+});
+
+// center touch: show who's close to UNO
+setInterval(()=>{
+  // gentle hint
+  const u = players.find(p=>p.hand.length===1);
+  if(u && !gameLocked) showToast(`${u.name} tiene UNO... cuidado.`, 1400);
+}, 8000);
+
+</script>
+</body>
+</html>

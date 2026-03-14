@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>preguntas</title>
+
+  <style>
+    body {
+      background-image: url(inicio.jpg);
+      background-size: 800px 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      background-attachment: fixed; 
+      color: rgb(20, 16, 16);
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+      width: 100px
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+      background-color: rgba(10, 1, 63, 0.76);
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background-color: rgba(136, 115, 209, 0.548);
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      color: #000;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .question label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 30px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #3a78c2;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .explicacion-btn {
+      background-color: #888;
+      margin-left: 10px;
+      font-size: 14px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      text-align: center;
+      display: block;
+      margin: 10px auto 0 auto; 
+    }
+    .explicacion-btn:hover {
+      background-color: #666;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: red;
+    }
+
+    #gifDialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+    
+    #gifDialog img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+
+    #gifDialog button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #gifDialogIncorrecto {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(162, 171, 185, 0.973);
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+
+    #gifDialogIncorrecto img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+    #gifDialogIncorrecto button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #e24a4a;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #btnAdjuntarVideo {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 10px;
+    }
+
+    #btnSiguiente {
+      position: fixed;
+      top: 60px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 40px;
+    }
+
+    #btnSiguiente:hover {
+      background-color: #3a78c2;
+    }
+.btn-volver {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.btn-volver img {
+  width: 36px; 
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.btn-volver img:hover {
+  transform: scale(1.1);
+}
+
+    
+    
+    
+  </style>
+</head>
+<body>
+  <script src="script.js"></script>
+
+
+  <!-- Botón volver -->
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="D:\proyecto icfes\inicios.png" alt="Volver">
+  </button>
+
+  <a href="videos1.html" id="btnAdjuntarVideo" title="Ver videos"> VIDEOS EXPLICATIVOS</a>
+  <a href="pregunta2.html" id="btnSiguiente" title="Siguiente"> SIGUIENTE</a>
+
+  <h1>NIVEL 1</h1>
+  <h1>Prueba Estilo Saber 11 </h1>
+
+  <div class="form-container">
+   <form id="quizForm">
+  <div class="question">
+    <p>RESPONDA LA PREGUNTA 3 Y 4 DE ACUERDO CON LA SIGUIENTE INFORMACIÓN</p>
+
+    <p><b>TEXTO</b></p>
+    <p>
+     Uno de los escenarios donde empezó a codearse el vallenato con la música que escuchaba y
+bailaba la burguesía —valses, mazurcas, canciones napolitanas— fue el de las colitas. Era este
+el nombre que recibían las ‘colas’ o finales de fiesta de la clase adinerada: bodas, bautizos,
+cumpleaños, festejos religiosos... Durante el sarao, mientras los señores se divertían con la
+música europea que interpretaba una precaria orquesta provinciana, los trabajadores pasaban
+la fiesta en la cocina y los galpones a punta de acordeón, guacharaca y caja. Despachada la
+orquesta, los de atrás eran invitados a pasar adelante, y patrones y vaqueros se sentaban a
+tomar y cantar juntos. Se ha discutido acerca del papel que cumplieron las colitas en esta historia.
+Algunos dicen que estos remates de fiesta fueron el pabellón de maternidad del vallenato, pues
+combinaron ritmos europeos y nativos: entre ambos dieron a luz los aires vallenatos. “Las
+colitas son el ancestro directo del vallenato moderno”, afirma López Michelsen.
+Pero parece más acertado pensar que las colitas no ayudaron a formar el género, sino a
+divulgarlo. Para empezar, esta clase de fiestas improvisadas no se conocieron en toda la
+región, sino tan sólo en la zona del Valle de Upar. En El Paso no hubo colitas. En muchos
+lugares del río tampoco. Y, por otra parte, los historiadores indican que las colitas surgieron a
+comienzos del siglo XX, cuando ya el vallenato había empezado a coger ritmo con el trío del
+instrumental clásico. En cambio, las piquerias y retos sí constituyeron desde el principio uno
+de los más efectivos moldes de creación, propagación y desarrollo del vallenato. La leyenda
+de Francisco el Hombre habla de su desafío con el diablo, a quien únicamente logra derrotar
+cuando le canta el Credo al revés. Los grandes acordeoneros viajaban durante días para
+acudir a piquerias, concertadas de antemano o a través de recados, como lo atestigua ‘La gota
+fría’: “Acordate Moralitos de aquel día / que estuviste en Urumita/y no quisiste hacer parada”.
+        </p>
+
+           <p>Tomado de: Samper, D. y Tafur M. (1997). 100 años de vallenato. Bogotá: MTM Ediciones.</p>
+    </p>
+
+    <!-- PREGUNTA 1 -->
+    <p>3. El autor introduce la cita de López Michelsen con el fin de presentar la opinión de un
+conocedor del vallenato y</p>
+  <label><input type="radio" name="q1" value="a"> A. reforzar la tesis principal del texto, según la cual las colitas fueron divulgadoras del género.</label>
+    <label><input type="radio" name="q1" value="b"> B.  reforzar la tesis principal del texto, según la cual las colitas fueron divulgadoras del género.</label>
+    <label><input type="radio" name="q1" value="c"> C. legitimar la tesis principal del texto, según la cual las colitas originaron el vallenato moderno.</label>
+    <label><input type="radio" name="q1" value="d"> D. convencer al lector de que las colitas fueron las únicas divulgadoras del vallenato moderno.</label>
+
+    
+<p>4. El autor cita el verso de La gota fría para apoyar la idea de que los acordeoneros viajaban
+para asistir a diferentes piquerias, porque en este se hace referencia a</p>
+    <label><input type="radio" name="q2" value="a"> A. un acordeonero que cantaba colitas, llamado Lorenzo Morales.o</label>
+    <label><input type="radio" name="q2" value="b"> B. Urumita, un pueblo famoso por la realización de colitas</label>
+    <label><input type="radio" name="q2" value="c"> C.un acordeonero que se encontraba de paso por un pueblo.</label>
+    <label><input type="radio" name="q2" value="d"> D. Urumita, un pueblo al cual iban los acordeoneros.</label>
+    <button type="button" onclick="verificarRespuestas()">Enviar respuestas</button>
+    
+   
+ 
+
+
+  </div>
+</form>
+
+
+   
+
+    
+    </form>
+
+    <div id="resultado"></div>
+  </div>
+
+  <div id="gifDialog">
+    <img src="gifcorrec.gif" alt="¡Correcto!" />
+    <div>¡Respuesta Correcta! 🎉</div>
+    <button onclick="cerrarGifDialog()">Cerrar</button>
+  </div>
+
+  <div id="gifDialogIncorrecto">
+    <img src="gifincorrec.gif" alt="¡Incorrecto!" />
+    <div>Respuesta Incorrecta 😢</div>
+    <button onclick="cerrarGifIncorrecto()">Cerrar</button>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <p id="modal-text"></p>
+    </div>
+  </div>
+
+<script>
+  const respuestasCorrectas = {
+    q1: "c",
+    q2: "A"
+  };
+
+  const explicaciones = {
+    q1: {
+      a: "En el texto se menciona que Soledad se sirvió un café, pero es un detalle muy pequeño y no representa el tema central.",
+      b: "Soledad es la protagonista, pero 'bajo el sol' no aplica.",
+      c: "Aunque Soledad es periodista, no es lo más importante del texto.",
+      d: "Correcto. El escrito en la piel resume las cicatrices físicas y emocionales."
+    },
+    q2: {
+      a: "El café no es un personaje.",
+      b: "Correcto. Soledad es el personaje principal.",
+      c: "Esa es una opción incorrecta.",
+      d: "‘Piel’ es una metáfora, no el personaje."
+    }
+  };
+
+  // Guarda resultado individual
+  function guardarResultado(preguntaID, preguntaTexto, respuestaUsuario, respuestaCorrecta) {
+    const resultados = JSON.parse(localStorage.getItem("resultadosJuego") || "[]");
+
+    const esCorrecta = respuestaUsuario === respuestaCorrecta;
+
+    resultados.push({
+      pregunta: preguntaTexto,
+      respuestaUsuario,
+      respuestaCorrecta,
+      esCorrecta
+    });
+
+    localStorage.setItem("resultadosJuego", JSON.stringify(resultados));
+  }
+
+  function verificarRespuestas() {
+    const seleccion1 = document.querySelector('input[name="q1"]:checked');
+    const seleccion2 = document.querySelector('input[name="q2"]:checked');
+
+    if (!seleccion1 || !seleccion2) {
+      alert("Debes responder ambas preguntas antes de continuar.");
+      return;
+    }
+
+    // Obtener valores
+    const valor1 = seleccion1.value;
+    const valor2 = seleccion2.value;
+
+    const correcta1 = respuestasCorrectas.q1;
+    const correcta2 = respuestasCorrectas.q2;
+
+    // Guardar en localStorage
+    guardarResultado("q1", "3.El autor introduce la cita de López Michelsen con el fin de presentar la opinión de un conocedor del vallenato y:", valor1, correcta1);
+    guardarResultado("q2", "4. El autor cita el verso de La gota fría para apoyar la idea de que los acordeoneros viajaban para asistir a diferentes piquerias, porque en este se hace referencia a ", valor2, correcta2);
+
+    // Mostrar feedback
+    if (valor1 === correcta1 && valor2 === correcta2) {
+      mostrarGifDialog("q1");
+    } else {
+      mostrarGifIncorrecto(valor1 !== correcta1 ? "q1" : "q2");
+    }
+
+    sessionStorage.setItem("respondioPregunta1", "true");
+  }
+
+  function mostrarGifDialog(pregunta) {
+    const gifDialog = document.getElementById("gifDialog");
+    gifDialog.style.display = "block";
+
+    const btn = document.createElement("button");
+    btn.className = "explicacion-btn";
+    btn.textContent = "Ver explicación";
+    btn.onclick = () => mostrarExplicacion(pregunta, respuestasCorrectas[pregunta]);
+
+    const existingBtn = gifDialog.querySelector(".explicacion-btn");
+    if (existingBtn) existingBtn.remove();
+
+    gifDialog.appendChild(btn);
+  }
+
+  function cerrarGifDialog() {
+    document.getElementById("gifDialog").style.display = "none";
+  }
+
+  function mostrarGifIncorrecto(pregunta) {
+    const gifDialog = document.getElementById("gifDialogIncorrecto");
+    gifDialog.style.display = "block";
+
+    const seleccionada = document.querySelector(`input[name="${pregunta}"]:checked`);
+    const valor = seleccionada ? seleccionada.value : null;
+
+    const btn = document.createElement("button");
+    btn.className = "explicacion-btn";
+    btn.textContent = "Ver explicación";
+    btn.onclick = () => mostrarExplicacion(pregunta, valor);
+
+    const existingBtn = gifDialog.querySelector(".explicacion-btn");
+    if (existingBtn) existingBtn.remove();
+
+    gifDialog.appendChild(btn);
+  }
+
+  function cerrarGifIncorrecto() {
+    document.getElementById("gifDialogIncorrecto").style.display = "none";
+  }
+
+  function mostrarExplicacion(pregunta, opcion) {
+    const modal = document.getElementById("modal");
+    const texto = document.getElementById("modal-text");
+
+    cerrarGifDialog();
+    cerrarGifIncorrecto();
+
+    if (explicaciones[pregunta] && explicaciones[pregunta][opcion]) {
+      texto.textContent = explicaciones[pregunta][opcion];
+    } else {
+      texto.textContent = "No hay explicación disponible para esta opción.";
+    }
+
+    modal.style.display = "block";
+  }
+
+  function cerrarModal() {
+    document.getElementById("modal").style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById("modal");
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+   
+  btnSiguiente.addEventListener("click", function (event) {
+    event.preventDefault(); // Evita acciones por defecto
+     window.location.href = "file:///D:/proyecto%20icfes/siguientepregunt.html"; // Redirige al archivo local
+  });
+
+</script>
+
+
+</body>
+</html>

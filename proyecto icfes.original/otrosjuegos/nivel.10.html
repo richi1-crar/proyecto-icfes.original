@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Billar Pro+ (Spin, física realista, FX)</title>
+<style>
+  :root{
+    --bg:#061014;
+    --accent:#ffd86b;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#02060a,#061014);}
+  body{display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue";}
+  .container{display:flex;gap:16px;padding:18px;}
+  canvas{background:#c86f14;border-radius:18px;border:14px solid #2b2b2b;box-shadow: 0 20px 60px rgba(0,0,0,0.7);}
+  .panel{width:280px;color:#eee;background:rgba(255,255,255,0.03);padding:12px;border-radius:10px}
+  .title{color:var(--accent);font-weight:700;margin-bottom:6px;text-align:center}
+  .row{display:flex;gap:6px;align-items:center;margin:6px 0}
+  .btn{background:#222;padding:8px;border-radius:8px;text-align:center;cursor:pointer}
+  .small{font-size:13px;opacity:0.9}
+  input[type=range]{width:100%}
+  .hint{font-size:12px;opacity:0.8}
+</style>
+</head>
+<body>
+  <div class="container">
+    <canvas id="game" width="960" height="480"></canvas>
+    <div class="panel">
+      <div class="title">Billar Pro+ — Spin & FX</div>
+      <div class="small">Arrastra desde la blanca para apuntar. Mantén <strong>Shift</strong> al soltar para aplicar spin según el control.</div>
+
+      <div class="row"><div style="flex:1"><label class="hint">Offset (spin lateral)</label><input id="spinOffset" type="range" min="-12" max="12" value="0"></div></div>
+      <div class="row"><div style="flex:1"><label class="hint">Top / Backspin</label><input id="tbSpin" type="range" min="-12" max="12" value="0"></div></div>
+
+      <div class="row"><div style="flex:1"><label class="hint">Restitución (0-1)</label><input id="restitution" type="range" min="0.5" max="1" step="0.01" value="0.98"></div></div>
+
+      <div class="row"><div class="btn" id="reset">Reiniciar</div><div class="btn" id="snap">Snap</div></div>
+      <div style="height:8px"></div>
+      <div class="small"><strong>Estado:</strong> <span id="status">listo</span></div>
+      <div style="height:8px"></div>
+      <div class="small"><strong>Bolas restantes:</strong> <span id="left">—</span></div>
+      <div style="height:8px"></div>
+      <div class="small">Si quieres samples reales, súbelos y los enlazo sin ruido.</div>
+    </div>
+  </div>
+
+<script>
+/* Billar Pro+:
+   - Mejor restitución y coeficientes
+   - Spin: offset y top/back aplicados al golpear
+   - Visual FX: sombras, glare en hoyos, trails
+   - Sonidos sintetizados con WebAudio (choque, pocket, golpe)
+*/
+
+// Canvas
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// UI refs
+const statusSpan = document.getElementById('status');
+const leftSpan = document.getElementById('left');
+const spinOffsetInput = document.getElementById('spinOffset');
+const tbSpinInput = document.getElementById('tbSpin');
+const restitutionInput = document.getElementById('restitution');
+
+// Audio context and helper synth sounds
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function hitSound(intensity=0.6){
+  // percussive impact: saw + noise envelope
+  const o = audioCtx.createOscillator();
+  o.type = 'triangle'; o.frequency.value = 200 + Math.random()*400 * intensity;
+  const g = audioCtx.createGain(); g.gain.value = 0;
+  const bp = audioCtx.createBiquadFilter(); bp.type='highpass'; bp.frequency.value = 800;
+  // noise
+  const bufferSize = audioCtx.sampleRate * 0.2;
+  const noiseBuff = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = noiseBuff.getChannelData(0);
+  for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * 0.5 * intensity;
+  const noise = audioCtx.createBufferSource(); noise.buffer = noiseBuff;
+  const ng = audioCtx.createGain(); ng.gain.value = 0.0001;
+  noise.connect(ng); ng.connect(bp);
+
+  // mix
+  o.connect(g); g.connect(audioCtx.destination);
+  bp.connect(audioCtx.destination);
+
+  const now = audioCtx.currentTime;
+  g.gain.setValueAtTime(intensity*0.12, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+  ng.gain.setValueAtTime(0.25*intensity, now);
+  ng.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+  o.start(now); o.stop(now + 0.12);
+  noise.start(now); noise.stop(now + 0.12);
+}
+
+function pocketSound(){
+  // soft bell + low thud
+  const o = audioCtx.createOscillator(); o.type='sine'; o.frequency.value = 420;
+  const o2 = audioCtx.createOscillator(); o2.type='sine'; o2.frequency.value = 120;
+  const g = audioCtx.createGain(); g.gain.value = 0;
+  const g2 = audioCtx.createGain(); g2.gain.value = 0;
+  o.connect(g); g.connect(audioCtx.destination);
+  o2.connect(g2); g2.connect(audioCtx.destination);
+  const now = audioCtx.currentTime;
+  g.gain.setValueAtTime(0.18, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+  g2.gain.setValueAtTime(0.28, now); g2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+  o.start(now); o.stop(now + 0.6);
+  o2.start(now); o2.stop(now + 0.5);
+}
+
+// Mesa: hoyos
+const holeR = 18;
+const holes = [
+  {x:20,y:20},{x:W/2,y:20},{x:W-20,y:20},
+  {x:20,y:H-20},{x:W/2,y:H-20},{x:W-20,y:H-20}
+];
+
+// Bolas parámetros
+const R = 10;
+let balls = []; // {x,y,vx,vy,ax,ay,spinX,spinY,angle,color,num,pocketed,trail:[]}
+let white;
+
+// world parameters (editable)
+let RESTITUTION = parseFloat(restitutionInput.value); // coef. restitución
+const ROLL_FRICTION = 0.9975; // fricción lineal (velocidad)
+const SPIN_DECAY = 0.985; // decay del spin por fricción
+const TIME_STEP = 1;
+
+// paleta numérica
+const palette = {
+  0:'#ffffff',1:'#ffd9d9',2:'#d9d9ff',3:'#ffe4b3',4:'#d9ffd9',5:'#ffd9ff',
+  6:'#ffd8b3',7:'#e6e6e6',8:'#000000',9:'#ff8080',10:'#8080ff',
+  11:'#ffb366',12:'#80ff80',13:'#ff80ff',14:'#ffc973',15:'#bfbfbf'
+};
+
+// util
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+// Inicializa mesa con rack triangular
+function initTable(){
+  balls = [];
+  white = {x:120,y:H/2,vx:0,vy:0,ax:0,ay:0,spinX:0,spinY:0,angle:0,color:palette[0],num:0,pocketed:false,trail:[]};
+  balls.push(white);
+  // rack
+  const cx = 620, cy = H/2;
+  const order = [8,1,9,2,10,3,11,4,12,5,13,6,14,7,15];
+  let idx=0; let row=0;
+  for(let rcount=5; rcount>0; rcount--){
+    for(let j=0;j<rcount;j++){
+      const x = cx + row*(R*2+0.6);
+      const y = cy + (j - (rcount-1)/2)*(R*2+0.6);
+      const num = order[idx] || idx+1;
+      balls.push({x,y,vx:0,vy:0,ax:0,ay:0,spinX:0,spinY:0,angle:0,color:palette[num]||'#ccc',num,pocketed:false,trail:[]});
+      idx++;
+    }
+    row++;
+  }
+  updateLeft();
+  status("Preparado. Ajusta spin y restitución si quieres.");
+}
+function status(txt){ statusSpan.textContent = txt; }
+function updateLeft(){ leftSpan.textContent = balls.filter(b=>!b.pocketed && b.num!==0).length; }
+
+// dibujo bonito: sombra, brillo, stripe en bola
+function draw(){
+  // fondo mesa
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#b56f17';
+  ctx.fillRect(0,0,W,H);
+  // borde interior
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = '#3f2b1a';
+  roundRect(ctx,8,8,W-16,H-16,14);
+  ctx.stroke();
+
+  // hoyos glow & blur (simulated)
+  holes.forEach(h=>{
+    // soft glow
+    const grad = ctx.createRadialGradient(h.x,h.y,6,h.x,h.y,holeR+18);
+    grad.addColorStop(0,'rgba(0,0,0,0.9)');
+    grad.addColorStop(0.6,'rgba(0,0,0,0.8)');
+    grad.addColorStop(1,'rgba(0,0,0,0.0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(h.x,h.y,holeR+18,0,Math.PI*2);
+    ctx.fill();
+    // center
+    ctx.beginPath();
+    ctx.fillStyle = '#000';
+    ctx.arc(h.x,h.y,holeR,0,Math.PI*2);
+    ctx.fill();
+  });
+
+  // balls (draw after to be on top)
+  for(const b of balls){
+    if(b.pocketed) continue;
+    // trail
+    drawTrail(b);
+
+    // shadow
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(0,0,0,0.32)';
+    ctx.ellipse(b.x+4, b.y+6, R*1.15, R*0.6, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // ball body
+    ctx.beginPath();
+    ctx.arc(b.x,b.y,R,0,Math.PI*2);
+    // radial shading
+    const g = ctx.createRadialGradient(b.x-R*0.6,b.y-R*0.6,1,b.x,b.y,R*1.6);
+    g.addColorStop(0,'rgba(255,255,255,0.9)');
+    g.addColorStop(0.15,b.color);
+    g.addColorStop(1,shadeColor(b.color, -18));
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#111';
+    ctx.stroke();
+
+    // stripe for numbered (simulate rotation using angle)
+    if(b.num !== 0){
+      ctx.save();
+      ctx.translate(b.x,b.y);
+      ctx.rotate(b.angle);
+      ctx.beginPath();
+      ctx.fillStyle = (b.num===8? '#fff' : '#fff');
+      ctx.rect(-R+1, -6, R*2-2, 12);
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.fillStyle = b.color;
+      ctx.fillRect(-R+1, -6, R*2-2, 12);
+      ctx.globalCompositeOperation = 'source-over';
+      // number circle
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = (b.num===8? '#000':'#000'); ctx.font='9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(b.num,0,0);
+      ctx.restore();
+    }
+  }
+
+  // draw aiming guide if active
+  if(aiming){
+    ctx.beginPath();
+    ctx.setLineDash([8,6]);
+    ctx.moveTo(white.x,white.y);
+    ctx.lineTo(aimPos.x,aimPos.y);
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  requestAnimationFrame(draw);
+}
+
+function drawTrail(b){
+  // push position
+  if(!b.trail) b.trail = [];
+  b.trail.unshift({x:b.x,y:b.y,alpha:0.9});
+  if(b.trail.length>12) b.trail.pop();
+  // draw
+  for(let i=b.trail.length-1;i>=0;i--){
+    const t = b.trail[i];
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255,255,255,${t.alpha*0.06})`;
+    ctx.arc(t.x,t.y,R*(0.8 - i*0.05),0,Math.PI*2);
+    ctx.fill();
+    t.alpha *= 0.94;
+  }
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+// shading util
+function shadeColor(col, percent) {
+  // col "#rrggbb"
+  const f=parseInt(col.slice(1),16),t=percent<0?0:255,p=percent<0?percent*-1:percent;
+  const R=(f>>16),G=(f>>8)&0x00FF,B=f&0x0000FF;
+  const newR=Math.round((t-R)*p/100)+R;
+  const newG=Math.round((t-G)*p/100)+G;
+  const newB=Math.round((t-B)*p/100)+B;
+  return `rgb(${newR},${newG},${newB})`;
+}
+
+// física con spin y restitución
+function physicsStep(){
+  // aplicar movimiento
+  for(const b of balls){
+    if(b.pocketed) continue;
+    // apply spin as small lateral acceleration (Magnus-like simple)
+    // spinX -> lateral accel perpendicular to velocity
+    if(Math.hypot(b.vx,b.vy) > 0.01){
+      const speed = Math.hypot(b.vx,b.vy);
+      // perpendicular vector
+      const nx = -b.vy / speed, ny = b.vx / speed;
+      // spinX causes lateral movement, spinY affects forward/back friction effect
+      b.vx += nx * b.spinX * 0.0009 * speed;
+      b.vy += ny * b.spinX * 0.0009 * speed;
+      // top/backspin modifies forward speed
+      b.vx += (b.vx / speed) * b.spinY * 0.0006;
+      b.vy += (b.vy / speed) * b.spinY * 0.0006;
+    }
+    b.x += b.vx * TIME_STEP;
+    b.y += b.vy * TIME_STEP;
+    // rotation visual
+    b.angle += 0.08 * Math.hypot(b.vx,b.vy);
+    // decay
+    b.vx *= ROLL_FRICTION;
+    b.vy *= ROLL_FRICTION;
+    b.spinX *= SPIN_DECAY;
+    b.spinY *= SPIN_DECAY;
+    if(Math.abs(b.vx) < 0.005) b.vx = 0;
+    if(Math.abs(b.vy) < 0.005) b.vy = 0;
+  }
+
+  // colisiones bola-bola (elástica con restitution editable)
+  for(let i=0;i<balls.length;i++){
+    const A = balls[i];
+    if(A.pocketed) continue;
+    for(let j=i+1;j<balls.length;j++){
+      const B = balls[j];
+      if(B.pocketed) continue;
+      let dx = B.x - A.x, dy = B.y - A.y;
+      const dist = Math.hypot(dx,dy);
+      if(dist === 0) continue;
+      if(dist < R*2){
+        // push back to avoid overlap
+        const overlap = (R*2 - dist);
+        const nx = dx/dist, ny = dy/dist;
+        A.x -= nx * overlap/2;
+        A.y -= ny * overlap/2;
+        B.x += nx * overlap/2;
+        B.y += ny * overlap/2;
+
+        // relative velocity along normal
+        const rvx = B.vx - A.vx;
+        const rvy = B.vy - A.vy;
+        const relNormal = rvx*nx + rvy*ny;
+        if(relNormal > -0.0001){
+          // compute impulse scalar
+          const e = RESTITUTION; // restitution coefficient
+          const j = -(1 + e) * relNormal / 2; // masses = 1
+          const ix = j * nx, iy = j * ny;
+          A.vx -= ix;
+          A.vy -= iy;
+          B.vx += ix;
+          B.vy += iy;
+
+          // transfer a bit of spin: collision converts spin -> linear tangential impulse
+          // tangential unit vector
+          const tx = -ny, ty = nx;
+          const relTang = rvx*tx + rvy*ty;
+          const spinTransfer = 0.06;
+          const spinImpulse = (A.spinX - B.spinX) * spinTransfer;
+          A.vx -= tx * spinImpulse;
+          A.vy -= ty * spinImpulse;
+          B.vx += tx * spinImpulse;
+          B.vy += ty * spinImpulse;
+
+          // chime sound based on impulse magnitude
+          const impMag = Math.hypot(ix,iy);
+          hitSound(clamp(impMag*0.6,0.1,1.2));
+        }
+      }
+    }
+  }
+
+  // paredes: reflect except en zonas de hoyos (simulación)
+  for(const b of balls){
+    if(b.pocketed) continue;
+    // left/right
+    if(b.x - R < 0){
+      // si cerca de hoyo corner, dejar pasar hacia pocket; simple: si no en hole arc, reflect
+      const nearHole = holes.some(h => Math.hypot(h.x - b.x, h.y - b.y) < 28);
+      if(nearHole){
+        // allow falling if inside smaller radius
+      } else {
+        b.x = R; b.vx = -b.vx * RESTITUTION * 0.98; hitSound(0.18);
+      }
+    }
+    if(b.x + R > W){
+      const nearHole = holes.some(h => Math.hypot(h.x - b.x, h.y - b.y) < 28);
+      if(!nearHole){ b.x = W - R; b.vx = -b.vx * RESTITUTION * 0.98; hitSound(0.18); }
+    }
+    if(b.y - R < 0){
+      const nearHole = holes.some(h => Math.hypot(h.x - b.x, h.y - b.y) < 28);
+      if(!nearHole){ b.y = R; b.vy = -b.vy * RESTITUTION * 0.98; hitSound(0.18); }
+    }
+    if(b.y + R > H){
+      const nearHole = holes.some(h => Math.hypot(h.x - b.x, h.y - b.y) < 28);
+      if(!nearHole){ b.y = H - R; b.vy = -b.vy * RESTITUTION * 0.98; hitSound(0.18); }
+    }
+  }
+
+  // holes detection (pocket)
+  for(const b of balls){
+    if(b.pocketed) continue;
+    for(const h of holes){
+      const d = Math.hypot(b.x - h.x, b.y - h.y);
+      if(d < holeR - 3){
+        // pocketing
+        b.pocketed = true;
+        b.vx = b.vy = 0;
+        // animate to center (simple lerp)
+        const target = {x:h.x, y:h.y};
+        const id = setInterval(()=>{
+          b.x += (target.x - b.x)*0.25;
+          b.y += (target.y - b.y)*0.25;
+        },16);
+        setTimeout(()=>clearInterval(id),600);
+        pocketSound();
+        // rules
+        checkPocketRules(b);
+        updateLeft();
+      }
+    }
+  }
+}
+
+// reglas simples como antes
+let gameOver=false;
+function checkPocketRules(b){
+  if(b.num===0){
+    status("Falta: blanca pocketed — se reposiciona.");
+    setTimeout(()=>{
+      white.pocketed = false;
+      white.x = 120; white.y = H/2; white.vx = white.vy = 0;
+      updateLeft();
+    },600);
+    return;
+  }
+  if(b.num===8){
+    const others = balls.filter(x=>!x.pocketed && x.num!==0 && x.num!==8).length;
+    if(others>0){
+      status("Perdiste: la negra cayó antes de tiempo.");
+      gameOver=true;
+    } else {
+      status("¡Ganaste! Negra al final. 🏆");
+      gameOver=true;
+    }
+  } else {
+    status(`Bola ${b.num} embocada.`);
+  }
+}
+
+// control de usuario: apuntar y aplicar spin
+// 🎯 Nuevo sistema de apuntado con taco animado y mira visual
+let aiming = false, aimPos = {x: 0, y: 0}, cuePull = 0, cuePulling = false, cueAngle = 0;
+
+canvas.addEventListener("mousedown", (e) => {
+  if (gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  if (Math.hypot(mx - white.x, my - white.y) < 40 && allBallsStopped()) {
+    aiming = true;
+    cuePull = 0;
+    cuePulling = true;
+    aimPos.x = mx;
+    aimPos.y = my;
+  }
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  if (!aiming) return;
+  const rect = canvas.getBoundingClientRect();
+  aimPos.x = e.clientX - rect.left;
+  aimPos.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener("mouseup", (e) => {
+  if (!aiming) return;
+  cuePulling = false;
+  const dx = white.x - aimPos.x, dy = white.y - aimPos.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 3) {
+    aiming = false;
+    return;
+  }
+  const nx = dx / dist, ny = dy / dist;
+  const power = Math.min(40, cuePull * 1.4 + 8);
+
+  white.vx = nx * power;
+  white.vy = ny * power;
+
+  // aplicar spin si Shift presionado
+  const offset = parseFloat(spinOffsetInput.value);
+  const tb = parseFloat(tbSpinInput.value);
+  const applySpin = e.shiftKey;
+  if (applySpin) {
+    white.spinX = offset * 0.9;
+    white.spinY = tb * 0.9;
+    status(`Golpe con spin (${offset}, ${tb})`);
+  } else {
+    white.spinX = offset * 0.18;
+    white.spinY = tb * 0.12;
+    status("Golpe normal sin spin completo (mantén Shift para más efecto).");
+  }
+
+  hitSound(clamp(power * 0.02, 0.12, 1.2));
+  aiming = false;
+  cuePull = 0;
+});
+
+// animación del taco
+function drawCue() {
+  if (!aiming) return;
+  const dx = aimPos.x - white.x;
+  const dy = aimPos.y - white.y;
+  const dist = Math.hypot(dx, dy);
+  cueAngle = Math.atan2(dy, dx);
+
+  // aumentar retroceso si está cargando
+  if (cuePulling && cuePull < 40) cuePull += 1.5;
+  if (!cuePulling && cuePull > 0) cuePull *= 0.8;
+
+  const backDist = 35 + cuePull;
+  const cueX = white.x - Math.cos(cueAngle) * backDist;
+  const cueY = white.y - Math.sin(cueAngle) * backDist;
+
+  // mira (línea punteada)
+  ctx.beginPath();
+  ctx.setLineDash([8, 6]);
+  ctx.moveTo(white.x, white.y);
+  ctx.lineTo(aimPos.x, aimPos.y);
+  ctx.strokeStyle = "rgba(255,255,255,0.7)";
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // taco
+  ctx.save();
+  ctx.translate(cueX, cueY);
+  ctx.rotate(cueAngle);
+  const grad = ctx.createLinearGradient(0, -2, 120, 2);
+  grad.addColorStop(0, "#e0b974");
+  grad.addColorStop(0.6, "#b57a1f");
+  grad.addColorStop(1, "#472c00");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, -2.5, 120, 5);
+  ctx.restore();
+}
+
+// integrar el taco en la función draw
+const oldDraw = draw;
+draw = function() {
+  oldDraw();
+  drawCue();
+};
+
+canvas.addEventListener('mousemove',(e)=>{
+  if(!aiming) return;
+  const rect = canvas.getBoundingClientRect();
+  aimPos.x = e.clientX - rect.left;
+  aimPos.y = e.clientY - rect.top;
+});
+canvas.addEventListener('mouseup',(e)=>{
+  if(!aiming) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const dx = white.x - mx, dy = white.y - my;
+  const dist = Math.hypot(dx,dy);
+  if(dist < 3) { aiming=false; return;}
+  const power = Math.min(38, dist / 2.2);
+  const nx = dx / dist, ny = dy / dist;
+  // base velocity
+  white.vx = nx * power;
+  white.vy = ny * power;
+
+  // apply spin based on UI controls and whether Shift key was pressed during mouseup
+  // note: we check event.shiftKey; also read UI sliders
+  const offset = parseFloat(spinOffsetInput.value); // lateral spin
+  const tb = parseFloat(tbSpinInput.value); // top/back
+  const applySpin = e.shiftKey; // only if shift held, else minimal natural spin
+  if(applySpin){
+    white.spinX = offset * 0.9; // lateral spin
+    white.spinY = tb * 0.9; // forward/backspin
+    status(`Golpe con spin: lateral ${offset}, tb ${tb}`);
+  } else {
+    // small spin from imperfect hit
+    white.spinX = offset * 0.18;
+    white.spinY = tb * 0.12;
+    status('Golpe sin shift: spin secundario aplicado suave. Usa Shift para spin completo.');
+  }
+
+  // sound and finish
+  hitSound(clamp(power*0.02,0.12,1.2));
+  aiming=false;
+});
+
+// helper: all balls stopped
+function allBallsStopped(){ return balls.every(b => b.pocketed || (Math.abs(b.vx)<0.01 && Math.abs(b.vy)<0.01)); }
+
+// loop
+function loop(){
+  RESTITUTION = parseFloat(restitutionInput.value);
+  if(!gameOver){
+    for(let i=0;i<4;i++) physicsStep(); // substeps for stability
+  }
+  updateLeft();
+  requestAnimationFrame(loop);
+}
+draw(); loop();
+setInterval(()=>{},1000);
+
+// botones UI
+document.getElementById('reset').addEventListener('click',()=>{ gameOver=false; initTable(); });
+document.getElementById('snap').addEventListener('click',()=>{ if(allBallsStopped()){ white.vx = 9; white.vy = 0; hitSound(0.5); } });
+
+// inicializar
+initTable();
+
+// util: clamp already defined earlier? ensure exists
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+
+
+
+</script>
+
+</body>
+</html>

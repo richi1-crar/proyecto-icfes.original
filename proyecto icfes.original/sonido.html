@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajustes</title>
+  <style>
+    body {
+      background-image: url(inicio.jpg);
+      background-size: 800px 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-attachment: fixed;
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    .settings-container {
+      max-width: 400px;
+      margin: 100px auto;
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .settings-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .toggle-sound {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s;
+    }
+
+    .toggle-sound:hover {
+      background-color: #45a049;
+    }
+
+  </style>
+</head>
+<body style="background-color: rgba(5, 0, 75, 0.76);">
+
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="D:\\proyecto icfes\\inicios.png" alt="Volver">
+  </button>
+
+  <div class="settings-container">
+    <h2>🎵 Ajustes de Sonido</h2>
+
+    <button id="toggleMusic" class="toggle-sound" onclick="toggleMusic()">
+      🔊 Música Activada
+    </button>
+  </div>
+
+  <audio id="backgroundMusic" loop>
+    <source src="musica.mp3" type="audio/mpeg">
+    Tu navegador no soporta audio HTML5.
+  </audio>
+
+  <script>
+    const audio = document.getElementById('backgroundMusic');
+    const toggleBtn = document.getElementById('toggleMusic');
+
+    // Alternar música
+    function toggleMusic() {
+      let musicState = localStorage.getItem('musicState') || 'on';
+
+      if (musicState === 'on') {
+        audio.pause();
+        localStorage.setItem('musicState', 'off');
+        toggleBtn.textContent = '🔇 Música Desactivada';
+        toggleBtn.style.backgroundColor = '#d9534f';
+      } else {
+        audio.play();
+        localStorage.setItem('musicState', 'on');
+        toggleBtn.textContent = '🔊 Música Activada';
+        toggleBtn.style.backgroundColor = '#4CAF50';
+      }
+    }
+
+    // Cargar estado guardado al iniciar
+    window.onload = () => {
+      const savedState = localStorage.getItem('musicState') || 'on';
+      if (savedState === 'on') {
+        audio.play();
+        toggleBtn.textContent = '🔊 Música Activada';
+        toggleBtn.style.backgroundColor = '#4CAF50';
+      } else {
+        toggleBtn.textContent = '🔇 Música Desactivada';
+        toggleBtn.style.backgroundColor = '#d9534f';
+      }
+    };
+  </script>
+</body>
+</html>

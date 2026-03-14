@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Resultados del Juego</title>
+<style>
+  body { font-family: Arial; background: #f4f6fa; text-align: center; }
+  table { border-collapse: collapse; width: 80%; margin: 30px auto; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+  th { background: #007bff; color: white; }
+  .correcto { color: green; font-weight: bold; }
+  .incorrecto { color: red; font-weight: bold; }
+  button { margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; }
+
+    body {
+      background-image: url(inicio.jpg);
+      background-size: 800px 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      background-attachment: fixed; 
+      color: rgb(20, 16, 16);
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+      width: 100px
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+      background-color: rgba(10, 1, 63, 0.76);
+    }
+
+    h1 {
+      color: #0b0b0b;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background-color: rgba(136, 115, 209, 0.548);
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      color: #000;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .question label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 30px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #3a78c2;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .explicacion-btn {
+      background-color: #888;
+      margin-left: 10px;
+      font-size: 14px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      text-align: center;
+      display: block;
+      margin: 10px auto 0 auto; 
+    }
+    .explicacion-btn:hover {
+      background-color: #666;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: red;
+    }
+
+    #gifDialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+    
+    #gifDialog img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+
+    #gifDialog button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #gifDialogIncorrecto {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(162, 171, 185, 0.973);
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+
+    #gifDialogIncorrecto img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+    #gifDialogIncorrecto button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #e24a4a;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #btnAdjuntarVideo {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 10px;
+    }
+
+    #btnSiguiente {
+      position: fixed;
+      top: 60px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 40px;
+    }
+
+    #btnSiguiente:hover {
+      background-color: #3a78c2;
+    }
+.btn-volver {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.btn-volver img {
+  width: 36px; 
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.btn-volver img:hover {
+  transform: scale(1.1);
+}
+
+</style>
+  <!-- Botón volver -->
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="proyecto icfes.original" alt="Volver">
+  </button>
+</head>
+<body>
+
+
+<h1>Resultados del Juego</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pregunta</th>
+      <th>Tu respuesta</th>
+      <th>Respuesta correcta</th>
+      <th>Resultado</th>
+    </tr>
+  </thead>
+  <tbody id="tabla-resultados"></tbody>
+</table>
+
+<h2 id="puntaje">Tu puntaje: 0/0 (0%)</h2>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tablaResultados = document.getElementById("tabla-resultados");
+    const puntajeTexto = document.getElementById("puntaje");
+
+    const resultados = JSON.parse(localStorage.getItem("resultadosJuego") || "[]");
+
+    let correctas = 0;
+
+    resultados.forEach((item) => {
+      const fila = document.createElement("tr");
+
+      fila.innerHTML = `
+        <td>${item.pregunta}</td>
+        <td>${item.respuestaUsuario.toUpperCase()}</td>
+        <td>${item.respuestaCorrecta.toUpperCase()}</td>
+        <td style="text-align: center">${item.esCorrecta ? "✅" : "❌"}</td>
+      `;
+
+      if (item.esCorrecta) correctas++;
+
+      tablaResultados.appendChild(fila);
+    });
+
+    const total = resultados.length;
+    const porcentaje = total > 0 ? ((correctas / total) * 100).toFixed(2) : 0;
+
+    puntajeTexto.textContent = `Tu puntaje: ${correctas}/${total} (${porcentaje}%)`;
+  });
+
+  // 🔁 Nueva versión: borra y redirige al inicio
+  function borrarResultados() {
+    localStorage.removeItem("resultadosJuego");
+    alert("Los resultados han sido eliminados. Volverás al inicio para jugar otra vez.");
+    window.location.href = "index.html"; // Cambia por tu página inicial o juego
+  }
+</script>
+
+<button onclick="borrarResultados()">Borrar resultados</button>
+
+
+</body>
+</html>

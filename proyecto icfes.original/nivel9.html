@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ahorcado Pro 3000 — Literatura Crítica</title>
+  <style>
+    body {
+      background: #0f172a;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #ffcc00;
+      text-shadow: 2px 2px 6px #000;
+    }
+
+    #difficulty {
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    #word {
+      font-size: 2rem;
+      letter-spacing: 10px;
+      margin: 20px;
+    }
+
+    #letters {
+      margin: 20px;
+      display: grid;
+      grid-template-columns: repeat(7, 50px);
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #ffcc00;
+      color: black;
+    }
+
+    #hangman {
+      margin: 20px;
+      font-size: 1.5rem;
+      white-space: pre;
+      font-family: monospace;
+      transition: transform 1s ease-in-out;
+    }
+
+    #message {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff4444;
+    }
+
+    .fall {
+      animation: caer 1.5s forwards;
+    }
+
+    .dance {
+      animation: bailar 1s infinite alternate;
+    }
+
+    @keyframes caer {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(200px) rotate(720deg); opacity: 0; }
+    }
+
+    @keyframes bailar {
+      0% { transform: rotate(-10deg); }
+      50% { transform: rotate(10deg); }
+      100% { transform: rotate(-10deg); }
+    }
+    
+    .btn-volver {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 4px;
+      background: white;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-volver img {
+      width: 24px;
+      height: 24px;
+    }
+
+    #hint {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #00ffaa;
+    }
+  </style>
+</head>
+<body>
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="inicios.png" alt="Volver">
+  </button>
+
+  <h1>🎩 Ahorcado Pro 3000 — Literatura Crítica 🎭</h1>
+  
+  <label for="difficulty">Selecciona dificultad:</label>
+  <select id="difficulty">
+    <option value="facil">Fácil</option>
+    <option value="medio">Medio</option>
+    <option value="dificil">Difícil</option>
+  </select>
+  <button onclick="iniciarJuego()">▶️ Iniciar</button>
+
+  <div id="hangman"></div>
+  <div id="word"></div>
+  <div id="hint"></div>
+  <div id="letters"></div>
+  <div id="message"></div>
+
+  <audio id="win-sound" src="https://www.soundjay.com/human/applause-8.mp3"></audio>
+  <audio id="lose-sound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
+  <audio id="error-sound" src="https://www.soundjay.com/button/sounds/beep-07.mp3"></audio>
+
+  <script>
+    const palabras = {
+      facil: [
+        { palabra: "AUTOR", pista: "Persona que escribe una obra literaria" },
+        { palabra: "POEMA", pista: "Composición escrita en verso" },
+        { palabra: "METAFORA", pista: "Figura literaria de comparación implícita" },
+        { palabra: "NOVELA", pista: "Obra literaria extensa en prosa" },
+        { palabra: "LECTOR", pista: "Quien interpreta y da vida al texto" }
+      ],
+      medio: [
+        { palabra: "SIMBOLISMO", pista: "Corriente literaria que expresa ideas mediante imágenes" },
+        { palabra: "REALISMO", pista: "Movimiento que refleja fielmente la realidad" },
+        { palabra: "INTERTEXTO", pista: "Relación entre diferentes obras literarias" },
+        { palabra: "ANALISIS", pista: "Proceso crítico de interpretación de un texto" },
+        { palabra: "AUTORREFERENCIA", pista: "Texto que se menciona a sí mismo dentro de la obra" }
+      ],
+      dificil: [
+        { palabra: "STRUCTURALISMO", pista: "Corriente crítica que estudia los sistemas de signos" },
+        { palabra: "DECONSTRUCCION", pista: "Teoría de Derrida que cuestiona el significado estable" },
+        { palabra: "POSMODERNIDAD", pista: "Etapa cultural que rompe con los grandes relatos" },
+        { palabra: "HERMENEUTICA", pista: "Arte o ciencia de interpretar textos" },
+        { palabra: "FENOMENOLOGIA", pista: "Estudio filosófico de la experiencia y la conciencia" }
+      ]
+    };
+
+    const intentosNivel = { facil: 8, medio: 6, dificil: 4 };
+
+    let palabra = "";
+    let pista = "";
+    let letrasCorrectas = [];
+    let letrasIncorrectas = [];
+    let intentos = 6;
+
+    const hangmanStages = [
+      `
+        +---+
+        |   |
+            |
+            |
+            |
+            |
+      =========`,
+      `
+        +---+
+        |   |
+        O   |
+            |
+            |
+            |
+      =========`,
+      `
+        +---+
+        |   |
+        O   |
+        |   |
+            |
+            |
+      =========`,
+      `
+        +---+
+        |   |
+        O   |
+       /|   |
+            |
+            |
+      =========`,
+      `
+        +---+
+        |   |
+        O   |
+       /|\\  |
+            |
+            |
+      =========`,
+      `
+        +---+
+        |   |
+        O   |
+       /|\\  |
+       /    |
+            |
+      =========`,
+      `
+        +---+
+        |   |
+        O   |
+       /|\\  |
+       / \\  |
+            |
+      =========`
+    ];
+
+    const wordDiv = document.getElementById("word");
+    const hangmanDiv = document.getElementById("hangman");
+    const lettersDiv = document.getElementById("letters");
+    const messageDiv = document.getElementById("message");
+    const hintDiv = document.getElementById("hint");
+
+    const winSound = document.getElementById("win-sound");
+    const loseSound = document.getElementById("lose-sound");
+    const errorSound = document.getElementById("error-sound");
+
+    function iniciarJuego() {
+      const nivel = document.getElementById("difficulty").value;
+      const seleccion = palabras[nivel][Math.floor(Math.random() * palabras[nivel].length)];
+      palabra = seleccion.palabra;
+      pista = seleccion.pista;
+      intentos = intentosNivel[nivel];
+      letrasCorrectas = [];
+      letrasIncorrectas = [];
+      wordDiv.innerHTML = "";
+      hangmanDiv.innerHTML = "";
+      messageDiv.innerHTML = "";
+      hintDiv.innerHTML = "";
+      hangmanDiv.classList.remove("fall", "dance");
+      lettersDiv.innerHTML = "";
+      mostrarPalabra();
+      actualizarAhorcado();
+      crearBotones();
+      mostrarPista();
+    }
+
+    function mostrarPalabra() {
+      wordDiv.innerHTML = palabra
+        .split("")
+        .map(letra => (letrasCorrectas.includes(letra) ? letra : "_"))
+        .join(" ");
+    }
+
+    function mostrarPista() {
+      hintDiv.textContent = "💡 Pista: " + pista;
+    }
+
+    function actualizarAhorcado() {
+      hangmanDiv.textContent = hangmanStages[letrasIncorrectas.length];
+    }
+
+    function mostrarMensaje(mensaje, color = "#ff4444") {
+      messageDiv.textContent = mensaje;
+      messageDiv.style.color = color;
+    }
+
+    function revisarLetra(letra) {
+      if (palabra.includes(letra)) {
+        letrasCorrectas.push(letra);
+      } else {
+        letrasIncorrectas.push(letra);
+        errorSound.play();
+      }
+      actualizarJuego();
+    }
+
+    function actualizarJuego() {
+      mostrarPalabra();
+      actualizarAhorcado();
+
+      if (palabra.split("").every(letra => letrasCorrectas.includes(letra))) {
+        mostrarMensaje("📚 ¡Eres todo un crítico literario! 🎉", "#00ff88");
+        hangmanDiv.classList.add("dance");
+        winSound.play();
+        desactivarBotones();
+      }
+
+      if (letrasIncorrectas.length === intentos) {
+        mostrarMensaje(`💀 Perdiste... La palabra era: ${palabra}`, "#ff4444");
+        hangmanDiv.classList.add("fall");
+        loseSound.play();
+        desactivarBotones();
+      }
+    }
+
+    function crearBotones() {
+      const abecedario = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
+      abecedario.forEach(letra => {
+        const btn = document.createElement("button");
+        btn.textContent = letra;
+        btn.addEventListener("click", () => {
+          btn.disabled = true;
+          revisarLetra(letra);
+        });
+        lettersDiv.appendChild(btn);
+      });
+    }
+
+    function desactivarBotones() {
+      document.querySelectorAll("#letters button").forEach(b => (b.disabled = true));
+    }
+  </script>
+</body>
+</html>

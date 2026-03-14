@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Parqués Colombiano 🎲</title>
+  <style>
+    body {
+      background: #0d1b2a;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 { margin: 10px; color: #f1c40f; }
+
+    #tablero {
+      display: grid;
+      grid-template-columns: repeat(15, 35px);
+      grid-template-rows: repeat(15, 35px);
+      gap: 1px;
+      background: #111;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .casilla {
+      width: 35px; height: 35px;
+      background: #fafafa;
+      display: flex; justify-content: center; align-items: center;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+
+    /* Cárceles */
+    .carcel.rojo { background: #e74c3c; }
+    .carcel.verde { background: #27ae60; }
+    .carcel.azul { background: #2980b9; }
+    .carcel.amarillo { background: #f1c40f; }
+
+    /* Caminos */
+    .camino { opacity: 0.9; }
+    .camino.rojo { background: #f8d7da; }
+    .camino.verde { background: #d4edda; }
+    .camino.azul { background: #d6e9f9; }
+    .camino.amarillo { background: #fff3cd; }
+
+    /* Meta */
+    .meta {
+      background: radial-gradient(circle, #ffeb3b 40%, #222 80%);
+      font-weight: bold;
+      color: black;
+    }
+
+    /* Fichas */
+    .ficha {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(0,0,0,0.5);
+      cursor: pointer;
+    }
+    .rojo { background: #c0392b; }
+    .verde { background: #1e8449; }
+    .azul { background: #1f618d; }
+    .amarillo { background: #d68910; }
+
+    /* Botón dado */
+    #dado {
+      margin-top: 15px;
+      font-size: 22px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: #1abc9c;
+      color: white;
+    }
+    #resultado { margin-top: 10px; font-size: 20px; }
+       .btn-volver {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 4px;
+  background: white;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-volver img {
+  width: 24px;
+  height: 24px;
+}
+  </style>
+</head>
+<body>
+     <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+      <img src="inicios.png" alt="Volver">
+    </button>
+  
+  <h1>🎲 Parqués Colombiano</h1>
+  <div id="tablero"></div>
+  <button id="dado">Lanzar dado 🎲</button>
+  <div id="resultado">Turno: rojo | Resultado: -</div>
+
+  <script>
+    const tablero = document.getElementById("tablero");
+    const resultado = document.getElementById("resultado");
+    const colores = ["rojo","verde","amarillo","azul"];
+    let indexTurno = 0;
+    let ultimoNumero = 0;
+
+    let fichas = [];
+
+    // Crear tablero 15x15
+    for (let i = 0; i < 225; i++) {
+      const div = document.createElement("div");
+      div.classList.add("casilla");
+      tablero.appendChild(div);
+    }
+
+    // Cárceles
+    function colorearCarcel(color, fila, col) {
+      for (let f = fila; f < fila+6; f++) {
+        for (let c = col; c < col+6; c++) {
+          tablero.children[f*15 + c].classList.add("carcel",color);
+        }
+      }
+    }
+    colorearCarcel("rojo",0,0);
+    colorearCarcel("verde",0,9);
+    colorearCarcel("amarillo",9,0);
+    colorearCarcel("azul",9,9);
+
+    // Meta central
+    for (let f=6; f<=8; f++) {
+      for (let c=6; c<=8; c++) {
+        tablero.children[f*15+c].classList.add("meta");
+        tablero.children[f*15+c].textContent = "M";
+      }
+    }
+
+    // Ruta general (una vuelta alrededor simplificada)
+    let ruta = [];
+    for (let c=0;c<15;c++) ruta.push(0*15+c);
+    for (let f=1;f<15;f++) ruta.push(f*15+14);
+    for (let c=13;c>=0;c--) ruta.push(14*15+c);
+    for (let f=13;f>=1;f--) ruta.push(f*15+0);
+
+    // Marcar camino
+    ruta.forEach(i=>tablero.children[i].classList.add("camino"));
+
+    // Crear fichas iniciales
+    function crearFicha(color, fila, col) {
+      let ficha = document.createElement("div");
+      ficha.classList.add("ficha", color);
+      tablero.children[fila*15+col].appendChild(ficha);
+      fichas.push({color, pos: fila*15+col, rutaIndex: -1, el: ficha});
+
+      ficha.addEventListener("click",()=>{
+        if (ultimoNumero===0) return alert("Lanza el dado primero 🎲");
+        if (color!==colores[indexTurno]) return alert("No es tu turno!");
+
+        moverFicha(fichas.find(f=>f.el===ficha));
+      });
+    }
+
+    // Cárceles posiciones
+    crearFicha("rojo",2,2);
+    crearFicha("rojo",3,2);
+    crearFicha("rojo",2,3);
+    crearFicha("rojo",3,3);
+
+    crearFicha("verde",2,11);
+    crearFicha("verde",3,11);
+    crearFicha("verde",2,12);
+    crearFicha("verde",3,12);
+
+    crearFicha("amarillo",11,2);
+    crearFicha("amarillo",12,2);
+    crearFicha("amarillo",11,3);
+    crearFicha("amarillo",12,3);
+
+    crearFicha("azul",11,11);
+    crearFicha("azul",12,11);
+    crearFicha("azul",11,12);
+    crearFicha("azul",12,12);
+
+    // Salidas
+    const salidas = {
+      rojo: 0*15+6,
+      verde: 6*15+14,
+      amarillo: 14*15+8,
+      azul: 8*15+0
+    };
+
+    // Mover ficha
+    function moverFicha(ficha){
+      // Si está en cárcel
+      if(ficha.rutaIndex===-1){
+        if(ultimoNumero===6){
+          ficha.rutaIndex = ruta.indexOf(salidas[ficha.color]);
+          tablero.children[salidas[ficha.color]].appendChild(ficha.el);
+        } else {
+          alert("Necesitas un 6 para salir!");
+          return;
+        }
+      } else {
+        ficha.rutaIndex = (ficha.rutaIndex+ultimoNumero)%ruta.length;
+        ficha.pos = ruta[ficha.rutaIndex];
+        tablero.children[ficha.pos].appendChild(ficha.el);
+      }
+
+      ultimoNumero=0;
+      // Cambiar turno
+      indexTurno=(indexTurno+1)%4;
+      resultado.textContent=`Turno: ${colores[indexTurno]} | Resultado: -`;
+    }
+
+    // Dado
+    document.getElementById("dado").addEventListener("click",()=>{
+      ultimoNumero = Math.floor(Math.random()*6)+1;
+      resultado.textContent = `Turno: ${colores[indexTurno]} | Resultado: ${ultimoNumero}`;
+    });
+  </script>
+</body>
+</html>
