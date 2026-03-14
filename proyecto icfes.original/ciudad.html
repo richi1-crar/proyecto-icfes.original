@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Selecciona Ciudad</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body class="ciudad">
+  <div class="overlay"></div>
+  <div class="contenido">
+    <img src="img/SOCIO OCUPACIONAL.jpg" alt="Logo Socio Ocupacional" class="logo">
+    <h1>¿En qué ciudad?</h1>
+    <div class="opciones" id="ciudades"></div>
+  </div>
+
+  <script>
+    const departamento = localStorage.getItem("departamento");
+    const ciudadesPorDepartamento = {
+      "Bogotá, D.C.": ["Bogotá"],
+      "Antioquia": ["Medellín", "Envigado"],
+      "Boyacá": ["Tunja", "Duitama"],
+      "Cundinamarca": ["Soacha", "Zipaquirá"],
+      "Valle del Cauca": ["Cali", "Palmira"]
+    };
+    const contenedor = document.getElementById("ciudades");
+    const ciudades = ciudadesPorDepartamento[departamento] || [];
+    ciudades.forEach(ciudad => {
+      const btn = document.createElement("button");
+      btn.textContent = ciudad;
+      btn.onclick = () => {
+        localStorage.setItem("ciudad", ciudad);
+        window.location.href = "resultados.html";
+      };
+      contenedor.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

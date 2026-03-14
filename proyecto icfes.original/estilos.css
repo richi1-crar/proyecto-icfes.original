@@ -1,0 +1,117 @@
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  position: relative;
+}
+
+
+body.modalidad {
+  background: url('img/fondo6.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+body.departamento {
+  background: url('img/fondo7.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+body.ciudad {
+  background: url('img/fondo8.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+body.resultados {
+  background: url('img/fondo9.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+.overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 0;
+}
+
+
+.contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  color: white;
+  padding: 2em;
+}
+.logo {
+  width: 150px;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 2.2em;
+  margin-bottom: 0.5em;
+}
+
+h2 {
+  font-size: 1.4em;
+  margin-bottom: 1em;
+}
+
+
+.opciones button {
+  padding: 1em 2.5em;
+  margin: 0.5em;
+  font-size: 1.1em;
+  font-weight: bold;
+  background-color: #9cff22;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.opciones button:hover {
+  background-color: #19e620;
+}
+
+.resultados-lista ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 1em;
+  text-align: left;
+  max-width: 600px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5em;
+}
+
+.resultados-lista li {
+  margin-bottom: 1em;
+  padding: 1em;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1em;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  transition: background 0.3s ease;
+}
+
+.resultados-lista li:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sin-resultados {
+  font-size: 1.2em;
+  color: white;
+  background: rgba(255, 0, 0, 0.2);
+  padding: 1em;
+  border-radius: 8px;
+}

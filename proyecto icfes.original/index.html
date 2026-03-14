@@ -1,218 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  
-  <title>PROYECTO</title>
-  
- 
-  <style>
-    body {
-      background-image: url(inicio.jpg);
-      background-size: 700px 700px;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-color: rgba(1, 10, 51, 0.76);
-      height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    table.icon-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 300px 0px;
-    }
-
-    td.left {
-      text-align: left;
-      padding-left: 50px;
-    }
-
-    td.right {
-      text-align: right;
-      padding-right: 50px;
-    }
-
-    table.icon-table img:hover {
-      transform: scale(1.1);
-    }
-
-    table.icon-table img {
-      transition: transform 0.3s ease;
-    }
-
-    .icon-sonido {
-      width: 60px;
-    }
-
-    .icon-ajustes {
-      width: 90px;
-    }
-
-    .centered {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    #btnJugar {
-      cursor: pointer;
-    }
-
-    /* Estilo del cuadro modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background-color: #421c80e3;
-      padding: 30px 50px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-      animation: fadeIn 0.4s ease;
-    }
-
-    .nivel-btn {
-      display: block;
-      width: 200px;
-      margin: 20px auto;
-      padding: 15px 0;
-      background-color: #4a90e2;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 20px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .nivel-btn:hover {
-      background-color: #3a78c2;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .close-btn {
-      background-color: #999;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 8px 15px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .close-btn:hover {
-      background-color: #666;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="estilo.css">
+    <title>Socio Ocupacional</title>
 </head>
-
 <body>
-<script src="script.js"></script>
+    <section class="contenedor">
+        <header>
+            <h1>Socio Ocupacional</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="nosotros.html">Nosotros</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                    <li><a href="explorar.html">Explorar</a></li>
+                </ul>
+            </nav>
+            <div class="busqueda">
+                <input type="text" placeholder="Buscar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+        </header>
 
-  
-  <table class="icon-table">
-    <tr>
-      <td class="left">
-        <a href="sonido.html">
-          <img src="sonido.png" alt="Sonido" class="icon-sonido">
-        </a>
-      </td>
-      <td class="right">
-        <a href="ajustes.html">
-          <img src="config.png" alt="Ajustes" class="icon-ajustes">
-        </a>
-      </td>
-    </tr>
-  </table>
+        <div class="contenido">
+            <div class="linea-decorativa">
+                <div class="circulo"></div>
+                <div class="circulo"></div>
+                <div class="circulo"></div>
+            </div>
+            <div class="left">
+                <h4><strong>BIENVENIDO A SOCIO OCUPACIONAL</strong></h4>
+                <p>Socio Ocupacional es una plataforma que orienta a estudiantes en la elección de su carrera y construcción de su proyecto de vida. !Esperamos ayudarte a elegir tu futuro¡</p>
+<a href="filtros.html">
+                <button>INICIAMOS</button>
+</a>
 
-  <div class="centered">
-    <img src="logo.png" width="400px" alt="Logo">
-  </div>
+                <div class="redes">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
 
-  <div class="centered">
-    <img src="inicio.jpeg" width="250px" id="btnJugar" alt="Jugar">
-  </div>
+            <div class="right">
+                <div class="popular">
+                    Popular
+                </div>
+                <div class="contenedor-fotos">
+                    <img src="img/SOCIO OCUPACIONAL.jpg" alt="">
+                    <img src="img/sena.jpg" alt="">
+                    <img src="img/colnazareth.jpg" alt="">
+                </div>
+            </div>
+        </div>
 
-  <div id="nivelModal" class="modal">
-    <div class="modal-content">
-      <h2>Selecciona un nivel</h2>
-      <button class="nivel-btn" onclick="location.href='preguntas.html'">Nivel 1</button>
-      <button class="nivel-btn" onclick="location.href='niveles.html'">Nivel 2</button>
-      <button class="close-btn" onclick="cerrarModal()">Cancelar</button>
-    </div>
-  </div>
-  
-
-  <script>
-    const btnJugar = document.getElementById("btnJugar");
-    const modal = document.getElementById("nivelModal");
-
-    btnJugar.addEventListener("click", () => {
-      modal.style.display = "flex";
-    });
-
-    function cerrarModal() {
-      modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-      if (event.target === modal) {
-        cerrarModal();
-      }
-    };
+    </section>
     
-    
-  </script>
-  <audio id="backgroundMusic" loop>
-  <source src="musica.mp3" type="audio/mpeg">
-  Tu navegador no soporta audio HTML5.
-</audio>
-
-<script>
-  const audio = document.getElementById('backgroundMusic');
-
-  // Revisar el estado guardado en localStorage
-  const musicState = localStorage.getItem('musicState') || 'on';
-
-  // Si la música está activada, reproducirla
-  if (musicState === 'on') {
-    audio.play().catch(() => {
-      console.log("Esperando interacción del usuario para reproducir música");
-    });
-  } else {
-    audio.pause();
-  }
-
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'musicState') {
-      if (event.newValue === 'on') {
-        audio.play();
-      } else {
-        audio.pause();
-      }
-    }
-  });
-</script>
-
-
- 
-  
-
 </body>
 </html>

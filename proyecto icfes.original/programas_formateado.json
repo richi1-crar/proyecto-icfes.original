@@ -1,0 +1,17 @@
+[
+  { "carrera": "Ingeniería de Sistemas", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$3.500.000" },
+  { "carrera": "Medicina", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "6 años", "costo": "$8.000.000" },
+  { "carrera": "Derecho", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$4.200.000" },
+  { "carrera": "Ingeniería Civil", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$4.800.000" },
+  { "carrera": "Contaduría Pública", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Virtual", "duracion": "4 años", "costo": "$2.900.000" },
+  { "carrera": "Psicología", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$3.900.000" },
+  { "carrera": "Enfermería", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$4.100.000" },
+  { "carrera": "Administración de Empresas", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Virtual", "duracion": "4 años", "costo": "$3.200.000" },
+  { "carrera": "Arquitectura", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$5.000.000" },
+  { "carrera": "Odontología", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$6.800.000" },
+  { "carrera": "Licenciatura en Lengua Castellana", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Virtual", "duracion": "4 años", "costo": "$2.500.000" },
+  { "carrera": "Ingeniería Industrial", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$4.400.000" },
+  { "carrera": "Fisioterapia", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$4.600.000" },
+  { "carrera": "Nutrición y Dietética", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Presencial", "duracion": "5 años", "costo": "$4.200.000" },
+  { "carrera": "Trabajo Social", "universidad": "Universidad de Tunja", "departamento": "Boyacá", "ciudad": "Tunja", "modalidad": "Virtual", "duracion": "4 años", "costo": "$2.700.000" }
+]

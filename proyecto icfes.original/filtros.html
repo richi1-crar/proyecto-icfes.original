@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Selecciona Modalidad</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body class="modalidad">
+  <div class="overlay"></div>
+  <div class="contenido">
+    <img src="img/SOCIO OCUPACIONAL.jpg" alt="Logo Socio Ocupacional" class="logo">
+    <h1>¿Qué modalidad deseas?</h1>
+    <div class="opciones">
+      <button onclick="seleccionar('Presencial')">Presencial</button>
+      <button onclick="seleccionar('Virtual')">Virtual</button>
+    </div>
+  </div>
+  <script>
+    function seleccionar(modalidad) {
+      localStorage.setItem("modalidad", modalidad);
+      window.location.href = "departamento.html";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Selecciona Departamento</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body class="departamento">
+  <div class="overlay"></div>
+  <div class="contenido">
+    <img src="img/SOCIO OCUPACIONAL.jpg" alt="Logo Socio Ocupacional" class="logo">
+    <h1>¿En qué departamento?</h1>
+    <div class="opciones" id="departamentos"></div>
+  </div>
+  <script>
+    const departamentos = ["Bogotá, D.C.", "Antioquia", "Boyacá", "Cundinamarca", "Valle del Cauca"];
+    const contenedor = document.getElementById("departamentos");
+    departamentos.forEach(dep => {
+      const btn = document.createElement("button");
+      btn.textContent = dep;
+      btn.onclick = () => {
+        localStorage.setItem("departamento", dep);
+        window.location.href = "ciudad.html";
+      };
+      contenedor.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

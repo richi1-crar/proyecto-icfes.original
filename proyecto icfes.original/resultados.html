@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados</title>
+  <link rel="stylesheet" href="estilos.css">
+  <style>
+    .seccion-carreras {
+      background-color: #f9f9f9;
+      padding: 20px;
+      margin-top: 40px;
+      border-top: 2px solid #ccc;
+    }
+
+    .seccion-carreras h2 {
+      margin-bottom: 15px;
+    }
+
+    .seccion-carreras ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .seccion-carreras li {
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .resultados-lista ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .resultados-lista li {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+
+    .resultados-lista li strong {
+      display: block;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .resultados-lista span {
+      display: block;
+      margin-top: 5px;
+      color: #555;
+    }
+
+    .resultados-lista .detalle {
+      margin-top: 8px;
+      font-weight: bold;
+      color: #000;
+    }
+  </style>
+</head>
+<body class="resultados">
+  <div class="overlay"></div>
+  <div class="contenido">
+    <img src="D:\Web Socio Ocupacional.copi\img\logo00.jpg" alt="Socio Ocupacional">
+
+    <h1>Programas Disponibles</h1>
+    <h2 id="titulo"></h2>
+    <div id="resultados" class="resultados-lista"></div>
+  </div>
+
+  <!-- Sección adicional con carreras fijas -->
+  <div class="seccion-carreras">
+    <h2>Carreras disponibles en general</h2>
+    <ul>
+      <li>Ingeniería de Sistemas</li>
+      <li>Medicina</li>
+      <li>Derecho</li>
+      <li>Administración de Empresas</li>
+      <li>Ingeniería Civil</li>
+      <li>Psicología</li>
+      <li>Contaduría Pública</li>
+      <li>Arquitectura</li>
+      <li>Enfermería</li>
+      <li>Comunicación Social</li>
+      <li>Educación Infantil</li>
+      <li>Ingeniería Electrónica</li>
+      <li>Trabajo Social</li>
+      <li>Biología</li>
+      <li>Diseño Gráfico</li>
+    </ul>
+  </div>
+
+  <script>
+    const modalidad = localStorage.getItem("modalidad");
+    const departamento = localStorage.getItem("departamento");
+    const ciudad = localStorage.getItem("ciudad");
+
+    document.getElementById("titulo").textContent = `${modalidad} - ${departamento} - ${ciudad}`;
+
+    fetch("programas_formateado.json")
+      .then(res => res.json())
+      .then(data => {
+        const resultados = data.filter(p =>
+          p.modalidad === modalidad &&
+          p.departamento === departamento &&
+          (!p.ciudad || p.ciudad === ciudad)
+        );
+
+        const div = document.getElementById("resultados");
+
+        if (resultados.length === 0) {
+          div.innerHTML = "<p class='sin-resultados'>No se encontraron resultados.</p>";
+        } else {
+          const lista = document.createElement("ul");
+          resultados.forEach(p => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              <strong>${p.carrera}</strong>
+              <span>Universidad: ${p.universidad}</span>
+              <span class="detalle">Costo: ${p.costo || 'No disponible'} – Duración: ${p.duracion}</span>
+            `;
+            lista.appendChild(li);
+          });
+          div.appendChild(lista);
+        }
+      });
+  </script>
+</body>
+</html>
