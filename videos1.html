@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Videos </title>
+  <style>
+    
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('inicio.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-color: rgba(10, 1, 63, 0.76);
+      color: white;
+      background-size: 800px 800px;
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100px;
+      height: auto;
+      border-radius: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    .video-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      padding: 100px 20px 40px;
+    }
+
+    video {
+      width: 90%;
+      max-width: 700px;
+      border: 2px solid #ffffff33;
+      border-radius: 10px;
+    }
+    .btn-volver {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  padding: 6px;
+  background: white;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.btn-volver img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Efecto hover opcional */
+.btn-volver:hover {
+  background: var(--accent);
+}
+
+.btn-volver:hover img {
+  filter: brightness(0) invert(1);
+}
+
+  </style>
+</head>
+<body>
+  <body>
+
+    <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+      <img src="inicios.png" alt="Volver">
+    </button>
+  
+    <div class="wrap">
+      <!-- contenido del juego -->
+    </div>
+  </body>
+  
+
+ 
+  <p>
+<center><P>PREGUNTA 1</P></center>
+
+  <!-- Contenedor de videos (uno debajo de otro) -->
+  <div class="video-container">
+    <video controls>
+      <source src="D:\Corto Animado_ _Sr. Indiferente_ por Aryasb Feiz _ Calidad HD.mp4" type="video/mp4" />
+    
+    </video>
+     <center><P>PREGUNTA 2</P></center>
+    <video controls>
+      <source src="video2.mp4" type="video/mp4" />
+  
+    
+    
+  </div>
+
+</body>
+</html>

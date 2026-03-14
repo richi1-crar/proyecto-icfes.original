@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📜 Reglas del Juego</title>
+  <style>
+    body {
+      background-image: url("inicio.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background-attachment: fixed;
+      background-color: rgba(5, 0, 75, 0.76);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animación de entrada */
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    .settings-container {
+      max-width: 500px;
+      background-color: rgba(255, 255, 255, 0.92);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      animation: fadeInUp 1s ease-out;
+      text-align: center;
+    }
+
+    .settings-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #3a2a9d;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      text-align: left;
+    }
+
+    li {
+      margin-bottom: 12px;
+      color: #202020;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    li strong {
+      color: #3b2eb3;
+    }
+
+    .save-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #3b2eb3, #6359e9);
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-top: 25px;
+      font-size: 16px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .save-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(90deg, #5a4ffb, #8b80ff);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Botón para volver al inicio -->
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="inicios.png" alt="Volver">
+  </button>
+
+  <div class="settings-container">
+    <h2>📜 Reglas del Juego</h2>
+    <ul>
+      <li><strong>1.</strong> Solo un jugador puede participar por partida.</li>
+      <li><strong>2.</strong> Responde correctamente para avanzar de nivel.</li>
+      <li><strong>3.</strong> Cada nivel tiene un número limitado de preguntas.</li>
+      <li><strong>4.</strong> Si fallas, podrás intentarlo nuevamente.</li>
+      <li><strong>5.</strong> Cada respuesta correcta vale <strong>1 punto</strong>.</li>
+      <li><strong>6.</strong> El tiempo puede ser limitado en algunos niveles.</li>
+      <li><strong>7.</strong> Los niveles se desbloquean al completar los anteriores.</li>
+      <li><strong>8.</strong> No cierres el juego para mantener tu progreso guardado.</li>
+      <li><strong>9.</strong> Puedes repetir niveles para mejorar tu puntaje.</li>
+      <li><strong>10.</strong> ¡Diviértete y demuestra tu conocimiento! 😎</li>
+    </ul>
+    <button class="save-btn" onclick="comenzarJuego()">Todo claro 🤖</button>
+  </div>
+
+  <script>
+    function comenzarJuego() {
+      // Animación de salida antes de redirigir
+      const contenedor = document.querySelector('.settings-container');
+      contenedor.style.transition = "all 0.8s ease";
+      contenedor.style.opacity = "0";
+      contenedor.style.transform = "scale(0.9)";
+      
+      setTimeout(() => {
+        window.location.href = "nivel1.html";
+      }, 800);
+    }
+  </script>
+
+</body>
+</html>

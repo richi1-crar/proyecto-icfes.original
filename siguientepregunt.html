@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>preguntas</title>
+
+  <style>
+    body {
+      background-image: url(inicio.jpg);
+      background-size: 800px 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      background-attachment: fixed; 
+      color: rgb(20, 16, 16);
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+      width: 100px
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+      background-color: rgba(10, 1, 63, 0.76);
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background-color: rgba(136, 115, 209, 0.548);
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      color: #000;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .question label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 30px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #3a78c2;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .explicacion-btn {
+      background-color: #888;
+      margin-left: 10px;
+      font-size: 14px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      text-align: center;
+      display: block;
+      margin: 10px auto 0 auto; 
+    }
+    .explicacion-btn:hover {
+      background-color: #666;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: red;
+    }
+
+    #gifDialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+    
+    #gifDialog img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+
+    #gifDialog button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #gifDialogIncorrecto {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(162, 171, 185, 0.973);
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+
+    #gifDialogIncorrecto img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+    #gifDialogIncorrecto button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #e24a4a;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #btnAdjuntarVideo {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 10px;
+    }
+
+    #btnSiguiente {
+      position: fixed;
+      top: 60px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 40px;
+    }
+
+    #btnSiguiente:hover {
+      background-color: #3a78c2;
+    }
+.btn-volver {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.btn-volver img {
+  width: 36px; 
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.btn-volver img:hover {
+  transform: scale(1.1);
+}
+
+    
+    
+    
+  </style>
+</head>
+<body>
+  <script src="script.js"></script>
+
+
+  <!-- Botón volver -->
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="D:\proyecto icfes.original" alt="Volver">
+  </button>
+
+  <a href="videos1.html" id="btnAdjuntarVideo" title="Ver videos"> VIDEOS EXPLICATIVOS</a>
+  <a href="D:\proyecto icfes\pregunta3.html" id="btnSiguiente" title="Siguiente"> SIGUIENTE</a>
+
+  <h1>NIVEL 1</h1>
+  <h1>Prueba Estilo Saber 11 </h1>
+
+  <div class="form-container">
+   <form id="quizForm">
+  <div class="question">
+    <p>RESPONDA LA PREGUNTA 5,6 y 7 DE ACUERDO CON LA SIGUIENTE INFORMACIÓN</p>
+
+    <p><b>TEXTO</b></p>
+    <p>
+     Con el siguiente fragmento comienza la novela “Sin remedio” de Antonio Caballero. Los
+sucesos tienen lugar en la madrugada. Los protagonistas son Escobar, un poeta frustrado, y
+Fina, la mujer con quien vive.
+A los treinta y un años Rimbaud estaba muerto. Desde la madrugada de sus treinta y un años
+Escobar contempló la revelación, parada en el alféizar como un pájaro: a los treinta y un
+años Rimbaud estaba muerto. Increíble.
+Fina seguía durmiendo junto a él, como si no se diera cuenta de la gravedad de la cosa. Le
+tapó las narices con dos dedos. Fina gimió, se revolvió en las sábanas; y después, con un
+ronquido, empezó a respirar tranquilamente por la boca. Las mujeres no entienden.
+Afuera cantaron los primeros pájaros, se oyó el ruido del primer motor, que es siempre el de
+una motocicleta. Es la hora de morir. Sentado sobre el coxis, con la nuca apoyada en el filo
+del espaldar de la cama y los ojos mirando el techo sin molduras, Escobar se esforzó por no
+pensar en nada. Que el universo lo absorbiera dulcemente, sin ruido. Que cuando Fina al fin
+se despertara hallara apenas un charquito de humedad entre las sábanas revueltas. Pensó
+que ya nunca más sería el mismo que se esforzaba ahora por no pensar en nada; pensó que
+nunca más sería el mismo que ahora pensaba que nunca más sería el mismo. Pero afuera
+crecían los ruidos de la vida. Sintió en su bajo vientre una punzada de advertencia: las ganas
+de orinar. La vida. Ah, levantarse. Tampoco esta vez moriremos.
+Vio asomar una raja delgada de sol por sobre el filo de los cerros, como un ascua. El sol
+entero se alzó de un solo golpe, globuloso, rosado oscuro en la neblina, y más arriba el cielo
+era ya azul, azul añil, tal vez: ¿Cuál es el azul añil? Y más arriba todavía, de un azul más
+profundo, tal vez azul cobalto. Como todos los días, probablemente. Aunque esas no eran
+horas de despertarse a ver todos los días. Nada garantizaba que el sol saliera así todos los
+días. No era posible. Decidió brindarle un poema, como un acto de fe.
+
+
+
+  <center><p>Sol puntual, sol igual,</p></center>
+  <center> <p>sol fatal</p></center>
+<center><p>lento sol caracol</p></center>
+<center><p>sol de Colombia.</p></center>
+
+Y era un lánguido sol lleno de eles, de día que promete lluvia. Quiso despertar a Fina para
+recitarle su poema. Pero ya había pasado el entusiasmo.</p>
+Quieto en la cama vio el lento ensombrecerse del día, las agrias nubes grises crecer sobre los
+cerros, el trazado plomizo de las primeras gotas de la lluvia, pesadas como piedras. Tal vez
+hubiera sido preferible estar muerto. No soportar el mismo día una vez y otra vez, el mismo
+sol, la misma lluvia, el tedio hasta los mismos bordes: la vida que va pasando y va volviendo
+en redondo. Y si se acaba la vida, faltan las reencarnaciones. El previsible despertar de Fina,
+el jugo de naranja, el desayuno.<p>
+
+  <p>Tomado y adaptado de: Caballero, A. (2004). Sin remedio, Bogotá: Alfaguara, pp. 13-14.</p>
+          
+    </p>
+
+  <div class="form-container">
+
+  <!-- PREGUNTA 4 -->
+  <div class="question" id="pregunta4">
+    <p>4. A partir de sus pensamientos y actitudes...</p>
+    <label><input type="radio" name="q4" value="a"> A. psicótico y con tendencias depresivas.</label>
+    <label><input type="radio" name="q4" value="b"> B. entusiasta y entregado a su pareja.</label>
+    <label><input type="radio" name="q4" value="c"> C. organizado e inmerso en la rutina.</label>
+    <label><input type="radio" name="q4" value="d"> D. sensible y con angustias.</label>
+    <button type="button" onclick="verificarPregunta('q4')">Enviar pregunta 4</button>
+  </div>
+
+  <!-- PREGUNTA 5 -->
+  <div class="question" id="pregunta5">
+    <p>5. ¿El pensamiento de Escobar acerca de Rimbaud refleja principalmente:</p>
+    <label><input type="radio" name="q5" value="a"> A. Admiración por su talento poético y su muerte temprana.</label>
+    <label><input type="radio" name="q5" value="b"> B. Tristeza por no haber alcanzado la misma fama.</label>
+    <label><input type="radio" name="q5" value="c"> C. Indiferencia ante la comparación con su propia vida.</label>
+    <label><input type="radio" name="q5" value="d"> D. Orgullo por seguir vivo a pesar de todo.</label>
+    <button type="button" onclick="verificarPregunta('q5')">Enviar pregunta 5</button>
+  </div>
+
+  <!-- PREGUNTA 6 -->
+  <div class="question" id="pregunta6">
+    <p>6. ¿Qué simboliza el “sol” en el texto?</p>
+    <label><input type="radio" name="q6" value="a"> A. La esperanza de un nuevo comienzo.</label>
+    <label><input type="radio" name="q6" value="b"> B. La monotonía y el peso de la existencia.</label>
+    <label><input type="radio" name="q6" value="c"> C. El triunfo del amor sobre la muerte.</label>
+    <label><input type="radio" name="q6" value="d"> D. La fugacidad del talento y la inspiración.</label>
+    <button type="button" onclick="verificarPregunta('q6')">Enviar pregunta 6</button>
+  </div>
+
+</div>
+
+
+   
+
+    
+    </form>
+
+    <div id="resultado"></div>
+  </div>
+
+  <div id="gifDialog">
+    <img src="gifcorrec.gif" alt="¡Correcto!" />
+    <div>¡Respuesta Correcta! 🎉</div>
+    <button onclick="cerrarGifDialog()">Cerrar</button>
+  </div>
+
+  <div id="gifDialogIncorrecto">
+    <img src="gifincorrec.gif" alt="¡Incorrecto!" />
+    <div>Respuesta Incorrecta 😢</div>
+    <button onclick="cerrarGifIncorrecto()">Cerrar</button>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <p id="modal-text"></p>
+    </div>
+  </div>
+
+<script>
+  // Respuestas correctas
+  const respuestasCorrectas = {
+  q4: "d",
+  q5: "a",
+  q6: "b"
+};
+
+const explicaciones = {
+  q4: {
+    a: "Escobar no es psicótico según el texto.",
+    b: "No se enfatiza que esté entregado a Fina.",
+    c: "No se describe como organizado.",
+    d: "Correcto, es sensible y con angustias."
+  },
+  q5: {
+    a: "Correcto. Admiración por Rimbaud y su muerte temprana.",
+    b: "No se menciona tristeza.",
+    c: "No hay indiferencia.",
+    d: "No se trata de orgullo."
+  },
+  q6: {
+    a: "No, no simboliza esperanza.",
+    b: "Correcto, simboliza monotonía y peso de la existencia.",
+    c: "No es el triunfo del amor.",
+    d: "No se refiere a fugacidad del talento."
+  }
+};
+
+function guardarResultado(preguntaID, textoPregunta, respuestaUsuario, respuestaCorrecta) {
+  const resultados = JSON.parse(localStorage.getItem("resultadosJuego") || "[]");
+  const esCorrecta = respuestaUsuario === respuestaCorrecta;
+
+  resultados.push({
+    pregunta: textoPregunta,
+    respuestaUsuario,
+    respuestaCorrecta,
+    esCorrecta
+  });
+
+  localStorage.setItem("resultadosJuego", JSON.stringify(resultados));
+}
+
+function verificarPregunta(preguntaID) {
+  const seleccion = document.querySelector(`input[name="${preguntaID}"]:checked`);
+  if (!seleccion) {
+    alert("Debes responder la pregunta antes de continuar.");
+    return;
+  }
+
+  const valor = seleccion.value;
+  const correcta = respuestasCorrectas[preguntaID];
+
+  const textoPregunta = {
+    q4: "4. A partir de sus pensamientos y actitudes...",
+    q5: "5. ¿El pensamiento de Escobar acerca de Rimbaud refleja principalmente:",
+    q6: "6. ¿Qué simboliza el 'sol' en el texto?"
+  }[preguntaID];
+
+  guardarResultado(preguntaID, textoPregunta, valor, correcta);
+
+  // Mostrar feedback
+  if (valor === correcta) {
+    mostrarGifDialog(preguntaID);
+  } else {
+    mostrarGifIncorrecto(preguntaID);
+  }
+}
+
+function mostrarGifDialog(pregunta) {
+  const gifDialog = document.getElementById("gifDialog");
+  gifDialog.style.display = "block";
+
+  const btn = document.createElement("button");
+  btn.className = "explicacion-btn";
+  btn.textContent = "Ver explicación";
+  btn.onclick = () => mostrarExplicacion(pregunta, respuestasCorrectas[pregunta]);
+
+  const existingBtn = gifDialog.querySelector(".explicacion-btn");
+  if (existingBtn) existingBtn.remove();
+
+  gifDialog.appendChild(btn);
+}
+
+function cerrarGifDialog() {
+  document.getElementById("gifDialog").style.display = "none";
+}
+
+function mostrarGifIncorrecto(pregunta) {
+  const gifDialog = document.getElementById("gifDialogIncorrecto");
+  gifDialog.style.display = "block";
+
+  const seleccionada = document.querySelector(`input[name="${pregunta}"]:checked`);
+  const valor = seleccionada ? seleccionada.value : null;
+
+  const btn = document.createElement("button");
+  btn.className = "explicacion-btn";
+  btn.textContent = "Ver explicación";
+  btn.onclick = () => mostrarExplicacion(pregunta, valor);
+
+  const existingBtn = gifDialog.querySelector(".explicacion-btn");
+  if (existingBtn) existingBtn.remove();
+
+  gifDialog.appendChild(btn);
+}
+
+function cerrarGifIncorrecto() {
+  document.getElementById("gifDialogIncorrecto").style.display = "none";
+}
+
+function mostrarExplicacion(pregunta, opcion) {
+  const modal = document.getElementById("modal");
+  const texto = document.getElementById("modal-text");
+
+  cerrarGifDialog();
+  cerrarGifIncorrecto();
+
+  if (explicaciones[pregunta] && explicaciones[pregunta][opcion]) {
+    texto.textContent = explicaciones[pregunta][opcion];
+  } else {
+    texto.textContent = "No hay explicación disponible para esta opción.";
+  }
+
+  modal.style.display = "block";
+}
+
+function cerrarModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+window.onclick = function(event) {
+  const modal = document.getElementById("modal");
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+};
+
+</script>
+
+
+
+
+</body>
+</html>

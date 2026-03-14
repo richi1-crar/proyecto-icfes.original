@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>preguntas</title>
+
+  <style>
+    body {
+      background-image: url(inicio.jpg);
+      background-size: 800px 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      background-attachment: fixed; 
+      color: rgb(20, 16, 16);
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+      width: 100px
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+      background-color: rgba(10, 1, 63, 0.76);
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background-color: rgba(136, 115, 209, 0.548);
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      color: #000;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .question label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 30px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #3a78c2;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .explicacion-btn {
+      background-color: #888;
+      margin-left: 10px;
+      font-size: 14px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      text-align: center;
+      display: block;
+      margin: 10px auto 0 auto; 
+    }
+    .explicacion-btn:hover {
+      background-color: #666;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: red;
+    }
+
+    #gifDialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+    
+    #gifDialog img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+
+    #gifDialog button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #gifDialogIncorrecto {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(162, 171, 185, 0.973);
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+
+    #gifDialogIncorrecto img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+    #gifDialogIncorrecto button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #e24a4a;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #btnAdjuntarVideo {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 10px;
+    }
+
+    #btnSiguiente {
+      position: fixed;
+      top: 60px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 40px;
+    }
+
+    #btnSiguiente:hover {
+      background-color: #3a78c2;
+    }
+.btn-volver {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.btn-volver img {
+  width: 36px; 
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.btn-volver img:hover {
+  transform: scale(1.1);
+}
+
+    
+    
+    
+  </style>
+</head>
+<body>
+  <script src="script.js"></script>
+
+
+
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="D:\proyecto icfes.original" alt="Volver">
+  </button>
+
+  <a href="videos1.html" id="btnAdjuntarVideo" title="Ver videos"> VIDEOS EXPLICATIVOS</a>
+  <a href="file:///D:/proyecto%20icfes.original/siguente%20pregunta.html.html" id="btnSiguiente" title="Siguiente"> SIGUIENTE</a>
+
+  <h1>NIVEL 1</h1>
+  <h1>Prueba Estilo Saber 11 </h1>
+
+  <div class="form-container">
+   <form id="quizForm">
+  <div class="question">
+    <p>RESPONDA LA PREGUNTA 1 Y 2 DE ACUERDO CON LA SIGUIENTE INFORMACIÓN</p>
+
+    <p><b>TEXTO</b></p>
+    <p>
+      La llovizna persistía desde la madrugada. Soledad despertó tan pronto el reloj sonó, como todos los días… las siete en punto. ¡Qué pesadilla! Durante unos minutos se quedó pensativa. Tenía recuerdos de lo que había soñado, las imágenes pasaban ante su mirada, veía un automóvil dar varias vueltas y luego incendiarse, quedando una persona atrapada en su interior. Se duchó rápidamente, se sirvió un café y prontamente ya iba en su coche rumbo a la editorial en donde trabajaba hacía cinco años.<br><br>
+      Su compañero había enfermado y tenía que cubrirlo, mientras ella se dirigía rumbo al aeropuerto para entrevistar a un funcionario, consultó la hora, las 9:30, se dio cuenta de que se le hacía tarde, el avión llegaba en ese momento… de pronto un perro se cruza en el camino, Soledad aprieta los frenos bruscamente, pero no se da cuenta de que la velocidad era excesiva ni que el asfalto tenía agua y hielo, el auto da varias vueltas y finalmente se estrella contra un árbol para terminar incendiado.<br><br>
+      Meses más tarde ella despierta en una fría sala de hospital. No recuerda cómo llegó, su memoria está lenta, su rostro y sus brazos arañados y quemados forman extraños dibujos. Ella… había amanecido con un escrito en la piel que permanecerá en su vida por el resto de los días.
+    </p>
+
+   <div class="form-container">
+ 
+  <div class="question" id="pregunta1">
+    <p>1. El título más adecuado para el anterior texto es</p>
+    <label><input type="radio" name="q1" value="a"> A. Algunos sorbos de café</label>
+    <label><input type="radio" name="q1" value="b"> B. Soledad bajo el sol</label>
+    <label><input type="radio" name="q1" value="c"> C. El último reportaje</label>
+    <label><input type="radio" name="q1" value="d"> D. Escrito en la piel</label>
+    <button type="button" onclick="verificarPregunta('q1')">Enviar pregunta 1</button>
+  </div>
+
+
+  <div class="question" id="pregunta2">
+    <p>2. ¿Cuál es el personaje principal del texto?</p>
+    <label><input type="radio" name="q2" value="a"> A. Café</label>
+    <label><input type="radio" name="q2" value="b"> B. Soledad</label>
+    <label><input type="radio" name="q2" value="c"> C. El último reportaje</label>
+    <label><input type="radio" name="q2" value="d"> D. Piel</label>
+    <button type="button" onclick="verificarPregunta('q2')">Enviar pregunta 2</button>
+  </div>
+</div>
+
+
+   
+
+    
+    </form>
+
+    <div id="resultado"></div>
+  </div>
+
+  <div id="gifDialog">
+    <img src="gifcorrec.gif" alt="¡Correcto!" />
+    <div>¡Respuesta Correcta! 🎉</div>
+    <button onclick="cerrarGifDialog()">Cerrar</button>
+  </div>
+
+  <div id="gifDialogIncorrecto">
+    <img src="gifincorrec.gif" alt="¡Incorrecto!" />
+    <div>Respuesta Incorrecta 😢</div>
+    <button onclick="cerrarGifIncorrecto()">Cerrar</button>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <p id="modal-text"></p>
+    </div>
+  </div>
+
+<script>
+  const respuestasCorrectas = {
+    q1: "d",
+    q2: "b"
+  };
+
+  const explicaciones = {
+    q1: {
+      a: "En el texto se menciona que Soledad se sirvió un café, pero es un detalle muy pequeño y no representa el tema central.",
+      b: "Soledad es la protagonista, pero 'bajo el sol' no aplica.",
+      c: "Aunque Soledad es periodista, no es lo más importante del texto.",
+      d: "Correcto. El escrito en la piel resume las cicatrices físicas y emocionales."
+    },
+    q2: {
+      a: "El café no es un personaje.",
+      b: "Correcto. Soledad es el personaje principal.",
+      c: "Esa es una opción incorrecta.",
+      d: "‘Piel’ es una metáfora, no el personaje."
+    }
+  };
+
+  function guardarResultado(preguntaID, preguntaTexto, respuestaUsuario, respuestaCorrecta) {
+    const resultados = JSON.parse(localStorage.getItem("resultadosJuego") || "[]");
+
+    const esCorrecta = respuestaUsuario === respuestaCorrecta;
+
+    resultados.push({
+      pregunta: preguntaTexto,
+      respuestaUsuario,
+      respuestaCorrecta,
+      esCorrecta
+    });
+
+    localStorage.setItem("resultadosJuego", JSON.stringify(resultados));
+  }
+
+  function verificarPregunta(preguntaID) {
+  const seleccion = document.querySelector(`input[name="${preguntaID}"]:checked`);
+  if (!seleccion) {
+    alert("Debes responder la pregunta antes de continuar.");
+    return;
+  }
+
+  const valor = seleccion.value;
+  const correcta = respuestasCorrectas[preguntaID];
+
+  
+  const textoPregunta = preguntaID === "q1"
+    ? "1. El título más adecuado para el texto es:"
+    : "2. ¿Cuál es el personaje principal del texto?";
+
+  guardarResultado(preguntaID, textoPregunta, valor, correcta);
+
+  // Mostrar feedback
+  if (valor === correcta) {
+    mostrarGifDialog(preguntaID);
+  } else {
+    mostrarGifIncorrecto(preguntaID);
+  }
+}
+
+    const valor1 = seleccion1.value;
+    const valor2 = seleccion2.value;
+
+    const correcta1 = respuestasCorrectas.q1;
+    const correcta2 = respuestasCorrectas.q2;
+
+    guardarResultado("q1", "1. El título más adecuado para el texto es:", valor1, correcta1);
+    guardarResultado("q2", "2. ¿Cuál es el personaje principal del texto?", valor2, correcta2);
+
+ 
+    if (valor1 === correcta1 && valor2 === correcta2) {
+      mostrarGifDialog("q1");
+    } else {
+      mostrarGifIncorrecto(valor1 !== correcta1 ? "q1" : "q2");
+    }
+
+    sessionStorage.setItem("respondioPregunta1", "true");
+  
+
+  function mostrarGifDialog(pregunta) {
+    const gifDialog = document.getElementById("gifDialog");
+    gifDialog.style.display = "block";
+
+    const btn = document.createElement("button");
+    btn.className = "explicacion-btn";
+    btn.textContent = "Ver explicación";
+    btn.onclick = () => mostrarExplicacion(pregunta, respuestasCorrectas[pregunta]);
+
+    const existingBtn = gifDialog.querySelector(".explicacion-btn");
+    if (existingBtn) existingBtn.remove();
+
+    gifDialog.appendChild(btn);
+  }
+
+  function cerrarGifDialog() {
+    document.getElementById("gifDialog").style.display = "none";
+  }
+
+  function mostrarGifIncorrecto(pregunta) {
+    const gifDialog = document.getElementById("gifDialogIncorrecto");
+    gifDialog.style.display = "block";
+
+    const seleccionada = document.querySelector(`input[name="${pregunta}"]:checked`);
+    const valor = seleccionada ? seleccionada.value : null;
+
+    const btn = document.createElement("button");
+    btn.className = "explicacion-btn";
+    btn.textContent = "Ver explicación";
+    btn.onclick = () => mostrarExplicacion(pregunta, valor);
+
+    const existingBtn = gifDialog.querySelector(".explicacion-btn");
+    if (existingBtn) existingBtn.remove();
+
+    gifDialog.appendChild(btn);
+  }
+
+  function cerrarGifIncorrecto() {
+    document.getElementById("gifDialogIncorrecto").style.display = "none";
+  }
+
+  function mostrarExplicacion(pregunta, opcion) {
+    const modal = document.getElementById("modal");
+    const texto = document.getElementById("modal-text");
+
+    cerrarGifDialog();
+    cerrarGifIncorrecto();
+
+    if (explicaciones[pregunta] && explicaciones[pregunta][opcion]) {
+      texto.textContent = explicaciones[pregunta][opcion];
+    } else {
+      texto.textContent = "No hay explicación disponible para esta opción.";
+    }
+
+    modal.style.display = "block";
+  }
+
+  function cerrarModal() {
+    document.getElementById("modal").style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById("modal");
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+   
+  btnSiguiente.addEventListener("click", function (event) {
+    event.preventDefault(); 
+    window.location.href = "file:///D:/proyecto%20icfes/siguente%20pregunta.html.html"; 
+  });
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>preguntas</title>
+
+  <style>
+    body {
+      background-image: url(inicio.jpg);
+      background-size: 800px 800px;
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 100vh;
+      margin: 0;
+      background-attachment: fixed; 
+      color: rgb(20, 16, 16);
+    }
+
+    .btn-volver {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
+      padding: 5px;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .btn-volver img {
+      width: 100%;
+      height: auto;
+      border-radius: 100%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+      width: 100px
+    }
+
+    .btn-volver img:hover {
+      transform: scale(1.1);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+      background-color: rgba(10, 1, 63, 0.76);
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 30px;
+    }
+
+    .form-container {
+      background-color: rgba(136, 115, 209, 0.548);
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      color: #000;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .question label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 30px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #3a78c2;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .explicacion-btn {
+      background-color: #888;
+      margin-left: 10px;
+      font-size: 14px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      text-align: center;
+      display: block;
+      margin: 10px auto 0 auto; 
+    }
+    .explicacion-btn:hover {
+      background-color: #666;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: red;
+    }
+
+    #gifDialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+    
+    #gifDialog img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+
+    #gifDialog button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #4a90e2;
+      color: white;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #gifDialogIncorrecto {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(162, 171, 185, 0.973);
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      text-align: center;
+      width: 400px;
+      max-width: 90%;
+    }
+
+    #gifDialogIncorrecto img {
+      max-width: 250px;
+      height: auto;
+      display: block;
+      margin: 0 auto 15px auto;
+    }
+    #gifDialogIncorrecto button {
+      margin-top: 10px;
+      padding: 5px 15px;
+      cursor: pointer;
+      border: none;
+      background-color: #e24a4a;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    #btnAdjuntarVideo {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 10px;
+    }
+
+    #btnSiguiente {
+      position: fixed;
+      top: 60px;
+      right: 15px;
+      z-index: 1100;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      text-decoration: none;
+      margin: 40px;
+    }
+
+    #btnSiguiente:hover {
+      background-color: #3a78c2;
+    }
+.btn-volver {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.btn-volver img {
+  width: 36px; 
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+
+.btn-volver img:hover {
+  transform: scale(1.1);
+}
+
+    
+    
+    
+  </style>
+</head>
+<body>
+  <script src="script.js"></script>
+
+
+  <!-- Botón volver -->
+  <button class="btn-volver" onclick="window.location.href='index.html'" title="Volver al inicio">
+    <img src="D:\proyecto icfes\inicios.png" alt="Volver">
+  </button>
+
+  <a href="videos1.html" id="btnAdjuntarVideo" title="Ver videos"> VIDEOS EXPLICATIVOS</a>
+  <a href="pregunta2.html" id="btnSiguiente" title="Siguiente"> SIGUIENTE</a>
+
+  <h1>NIVEL 1</h1>
+  <h1>Prueba Estilo Saber 11 </h1>
+
+  <div class="form-container">
+    <form id="quizForm">
+      <div class="question">
+        <p> RESPONDA LA PREGUNTA 10 Y 11 DE ACUERDO CON LA SIGUIENTE INFORMACIÓN</p>
+
+        <p><b>¿SERÁ QUE GOOGLE NOS ESTÁ VOLVIENDO ESTOOPIDOS?</b></p>
+              Durante los últimos años he tenido la incómoda sensación de que alguien (o algo) ha
+estado cacharreando con mi cerebro, rehaciendo la cartografía de mis circuitos neuronales,
+reprogramando mi memoria. No es que ya no pueda pensar (por lo menos hasta donde
+me doy cuenta), pero algo está cambiando. Ya no pienso como antes. Lo siento de manera
+muy acentuada cuando leo. Sumirme en un libro o un artículo largo solía ser una cosa fácil.
+La mera narrativa o los giros de los acontecimientos cautivaban mi mente y pasaba horas
+paseando por largos pasajes de prosa. Sin embargo, eso ya no me ocurre. Resulta que ahora,
+por el contrario, mi concentración se pierde tras leer apenas dos o tres páginas. Me pongo
+inquieto, pierdo el hilo, comienzo a buscar otra cosa que hacer. Es como si tuviera que forzar
+mi mente divagadora a volver sobre el texto. En dos palabras, la lectura profunda, que solía
+ser fácil, se ha vuelto una lucha.</p>
+    Y creo saber qué es lo que está ocurriendo. A estas alturas, llevo ya más de una década
+pasando mucho tiempo en línea, haciendo búsquedas y navegando, incluso, algunas veces,
+agregando material a las enormes bases de datos de internet. Como escritor, la red me ha
+caído del cielo. El trabajo de investigación, que antes me tomaba días inmerso en las secciones
+de publicaciones periódicas de las bibliotecas, ahora se puede hacer en cuestión de minutos.</p>
+
+Las ventajas de un acceso tan instantáneo a esa increíble y rica reserva de información son
+muchísimas, y ya han sido debidamente descritas y aplaudidas. Pero tal ayuda tiene su
+precio. Como subrayó en la década del 60 el teórico de los medios de comunicación Marshall
+McLuhan, los medios no son meros canales pasivos por donde fluye información. Cierto, se
+encargan de suministrar los insumos del pensamiento, pero también configuran el proceso
+de pensamiento. Y lo que la red parece estar haciendo, por lo menos en mi caso, es socavar
+poco a poco mi capacidad de concentración y contemplación. Mi mente ahora espera asimilar
+información de la misma manera como la red la distribuye: en un vertiginoso flujo de partículas.
+Alguna vez fui buzo y me sumergía en océanos de palabras. Hoy en día sobrevuelo a ras sus
+aguas como en una moto acuática.</p>
+
+Gracias a la omnipresencia del texto en internet, por no hablar de la popularidad de
+los mensajes escritos en los teléfonos celulares, es probable que hoy estemos leyendo
+cuantitativamente más de lo que leíamos en las décadas del 70 y 80 del siglo pasado, cuando
+la televisión era nuestro medio predilecto. Pero, sea lo que sea, se trata de otra forma de leer,
+y detrás subyace otra forma de pensar... Quizás incluso, una nueva manera de ser. La idea
+
+de que nuestra mente debiera operar como una máquina-procesadora-de-datos-de-alta-
+velocidad no solo está incorporada al funcionamiento de internet, sino que al mismo tiempo
+
+se trata del modelo empresarial imperante de la red.</p>
+A mayor velocidad con la que navegamos en la red, a mayor número de enlaces sobre los que
+hacemos clic y el número de páginas que visitamos, mayores las oportunidades que Google
+y otras compañías tienen para recoger información sobre nosotros y nutrirnos con anuncios
+publicitarios. Para bien de sus intereses económicos, les conviene distraernos a como dé lugar.
+
+
+             <p>Tomado y adaptado de: Carr, Nicholas. “Será que Google nos está volviendo estoopidos?”,
+Pombo, Juan Manuel (Traductor), en Revista Arcadia, 2010.</p>
+
+       
+
+        <p>10.En el último párrafo del texto se</p>
+        <label><input type="radio" name="q1" value="a"> A. legitiman las prácticas del manejo de información en Internet que buscan distraernosa como dé lugar.</label>
+        <label><input type="radio" name="q1" value="b"> B. desestima la efectividad de las estrategias publicitarias utilizadas en la web para obtener información.</label>
+        <label><input type="radio" name="q1" value="c"> C. denuncian las motivaciones de varias compañías al respecto de cómo se maneja la información en Internet.</label>
+        <label><input type="radio" name="q1" value="d"> D. rescatan estrategias para procesar datos a alta velocidad, sin caer en las manos de las empresas imperantes.</label>
+
+
+    <p><b>Considere el siguiente enunciado:</b></p>
+    <b>“Pero, sea lo que sea, se trata de otra forma de leer, y detrás subyace otra forma de pensar...
+Quizás incluso, una nueva manera de ser”.</b>
+      
+      <p>11.Esta frase, dentro de la globalidad del texto, es</p>
+         <label><input type="radio" name="q1" value="a"> A. una idea introductoria.</label>
+        <label><input type="radio" name="q1" value="b"> B. una conclusión del texto.</label>
+        <label><input type="radio" name="q1" value="c"> C. una idea de importancia secundaria.</label>
+        <label><input type="radio" name="q1" value="d"> D. una evidencia que apoya la tesis principal.</label>
+         </div>
+      
+
+   
+
+      <button type="button" onclick="verificarRespuestas()">Enviar respuestas</button>
+      
+    </form>
+
+    <div id="resultado"></div>
+  </div>
+
+  <div id="gifDialog">
+    <img src="gifcorrec.gif" alt="¡Correcto!" />
+    <div>¡Respuesta Correcta! 🎉</div>
+    <button onclick="cerrarGifDialog()">Cerrar</button>
+  </div>
+
+  <div id="gifDialogIncorrecto">
+    <img src="gifincorrec.gif" alt="¡Incorrecto!" />
+    <div>Respuesta Incorrecta 😢</div>
+    <button onclick="cerrarGifIncorrecto()">Cerrar</button>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <p id="modal-text"></p>
+    </div>
+  </div>
+
+  <script>
+    const respuestasCorrectas = {
+      q1: "d",
+      q2: "c"
+    };
+
+    const explicaciones = {
+      q1: {
+        a: "En el texto se menciona que Soledad se sirvió un café, pero es un detalle muy pequeño y no representa el tema central ni el sentido del relato.",
+        b: "Soledad es el nombre de la protagonista, pero no hay ninguna referencia al sol en el texto. El clima es frío y lluvioso.",
+        c: "Aunque Soledad es periodista, el relato se centra en el accidente y sus consecuencias, no en el reportaje.",
+        d: "Correcto. Resume la historia: las cicatrices físicas y emocionales del accidente, un 'escrito en la piel'."
+      },
+
+      
+
+      q2: {
+        a: "en el texto habla de una persona unica",
+        b: "Soledad es el nombre de la protagonista, pero no hay ninguna referencia al sol en el texto. El clima es frío y lluvioso.",
+        c: "Aunque Soledad es periodista, .",
+        d: "Correcto. Resume la historia: las cicatrices físicas y emocionales del accidente, un 'escrito en la piel'."
+        
+      }
+    };
+
+    function verificarRespuestas() {
+      let respondidas = 0;
+      let algunaCorrecta = false;
+      let algunaIncorrecta = false;
+      let preguntaMostrada = "";
+
+      for (let pregunta in respuestasCorrectas) {
+        const seleccionada = document.querySelector(`input[name="${pregunta}"]:checked`);
+        const correcta = respuestasCorrectas[pregunta];
+
+        if (seleccionada) {
+          respondidas++;
+          const valor = seleccionada.value;
+
+          if (valor === correcta) {
+            algunaCorrecta = true;
+            preguntaMostrada = pregunta;
+          } else {
+            algunaIncorrecta = true;
+            preguntaMostrada = pregunta;
+          }
+        }
+      }
+
+      if (respondidas === 0) {
+        alert("Debes seleccionar al menos una respuesta antes de enviar.");
+        return;
+      }
+
+      if (algunaCorrecta) {
+        mostrarGifDialog(preguntaMostrada);
+      } else if (algunaIncorrecta) {
+        mostrarGifIncorrecto(preguntaMostrada);
+      }
+
+      sessionStorage.setItem("respondioPregunta1", "true");
+    }
+
+    function mostrarGifDialog(pregunta) {
+      const gifDialog = document.getElementById("gifDialog");
+      gifDialog.style.display = "block";
+
+      const btn = document.createElement("button");
+      btn.className = "explicacion-btn";
+      btn.textContent = "Ver explicación";
+      btn.onclick = () => mostrarExplicacion(pregunta, respuestasCorrectas[pregunta]);
+
+      const existingBtn = gifDialog.querySelector(".explicacion-btn");
+      if (existingBtn) existingBtn.remove();
+
+      gifDialog.appendChild(btn);
+    }
+
+    function cerrarGifDialog() {
+      document.getElementById("gifDialog").style.display = "none";
+    }
+
+    function mostrarGifIncorrecto(pregunta) {
+      const gifDialog = document.getElementById("gifDialogIncorrecto");
+      gifDialog.style.display = "block";
+
+      const seleccionada = document.querySelector(`input[name="${pregunta}"]:checked`);
+      const valor = seleccionada ? seleccionada.value : null;
+
+      const btn = document.createElement("button");
+      btn.className = "explicacion-btn";
+      btn.textContent = "Ver explicación";
+      btn.onclick = () => mostrarExplicacion(pregunta, valor);
+
+      const existingBtn = gifDialog.querySelector(".explicacion-btn");
+      if (existingBtn) existingBtn.remove();
+
+      gifDialog.appendChild(btn);
+    }
+
+    function cerrarGifIncorrecto() {
+      document.getElementById("gifDialogIncorrecto").style.display = "none";
+    }
+
+    function mostrarExplicacion(pregunta, opcion) {
+      const modal = document.getElementById("modal");
+      const texto = document.getElementById("modal-text");
+
+      cerrarGifDialog();
+      cerrarGifIncorrecto();
+
+      if (explicaciones[pregunta] && explicaciones[pregunta][opcion]) {
+        texto.textContent = explicaciones[pregunta][opcion];
+      } else {
+        texto.textContent = "No hay explicación disponible para esta opción.";
+      }
+
+      modal.style.display = "block";
+    }
+
+    function cerrarModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("modal");
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+
+  document.addEventListener("DOMContentLoaded", function () {
+  const btnSiguiente = document.getElementById("btnSiguiente");
+  
+  btnSiguiente.addEventListener("click", function (event) {
+    event.preventDefault(); // Evita acciones por defecto
+    window.location.href = "file:///D:/proyecto%20icfes/resultado.html"; // Redirige al archivo local
+  });
+});
+
+          
+      
+    
+  </script>
+</body>
+</html>
